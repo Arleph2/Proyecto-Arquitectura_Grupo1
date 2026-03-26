@@ -2,7 +2,14 @@
 ## Plataforma de Aprendizaje Adaptativo y Colaborativo
 
 **Versión:** 1.0  
-**Fecha:** 22/03/2026  
+**Fecha:** 22/03/2026
+**Grupo:** [1]
+**Integrantes:**
+- Juan Camilo Alba - 20520477
+- Laura Garzon - 20511299
+- Carlos Villegas - 20532083
+- Arley Bernal - 20510888
+
 ---
 
 ## 1. INTRODUCCIÓN
@@ -268,5 +275,13 @@ La plataforma es un sistema independiente que se integrará en el futuro con otr
 | **DR-06** | Interoperabilidad | APIs REST + OpenAPI 3.0 + xAPI | Media |
 | **DR-07** | Motor Adaptativo | Reglas de adaptación configurables por docente | Alta |
 
+## APROBACIONES
+
+| Rol | Nombre | Firma | Fecha |
+|-----|--------|-------|-------|
+| **Líder del Grupo** | Juan Camilo Alba | Juan Camilo Alba | 18/03/26 |
+| **Integrante 2** | Laura Juliana Garzon Arias |Laura Juliana Garzon Arias| 18/03/26 |
+| **Integrante 3** | Arley Bernal Muñetón | Arley Bernal Muñetón | 18/03/26 |
+| **Integrante 4** | Carlos Villegas Ruiz  | Carlos Villegas R | 18/03/26 |
 
 **Fin del Documento SRS**
