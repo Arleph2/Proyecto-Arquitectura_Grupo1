@@ -1,11 +1,5 @@
 # ADR-001: Adoptar Arquitectura Orientada a Servicios (Service-Based Architecture)
 
-**Estado:** Aceptado  
-**Fecha:** 22/03/2026  
-**Decisores:** [Nombre 1], [Nombre 2], [Nombre 3], [Nombre 4]  
-**Relacionado con:** DR-01, DR-02, DR-03, DR-05, RNF-01, RNF-03, RNF-05  
-**Grupo:** [Número de grupo]
-
 ---
 
 ## Contexto y Problema
@@ -39,16 +33,16 @@ La decisión es crítica porque impacta todas las demás decisiones del proyecto
 Todo el sistema se construye como una única aplicación desplegable. Un solo servidor de aplicaciones maneja todos los módulos: cursos, evaluaciones, motor adaptativo, foros, analítica y usuarios. La base de datos es única y compartida por todos los módulos.
 
 **Pros:**
-- ✅ Simplicidad de desarrollo y despliegue: un solo repositorio, un solo pipeline de CI/CD.
-- ✅ Menor overhead operacional: no se requiere orquestación de múltiples servicios.
-- ✅ Latencia de comunicación interna mínima: llamadas a funciones en lugar de llamadas de red.
-- ✅ Más fácil de depurar: el stack trace es completo y en un solo lugar.
+- Simplicidad de desarrollo y despliegue: un solo repositorio, un solo pipeline de CI/CD.
+- Menor overhead operacional: no se requiere orquestación de múltiples servicios.
+- Latencia de comunicación interna mínima: llamadas a funciones en lugar de llamadas de red.
+- Más fácil de depurar: el stack trace es completo y en un solo lugar.
 
 **Contras:**
-- ❌ Escalabilidad limitada: no se puede escalar selectivamente el módulo de evaluaciones sin escalar todo el monolito.
-- ❌ Un bug en un módulo puede afectar a toda la plataforma (fallo en cascada).
-- ❌ El despliegue de un cambio pequeño requiere redesplegar toda la aplicación.
-- ❌ A medida que crece el sistema, la base de código se vuelve más difícil de mantener (big ball of mud).
+- Escalabilidad limitada: no se puede escalar selectivamente el módulo de evaluaciones sin escalar todo el monolito.
+- Un bug en un módulo puede afectar a toda la plataforma (fallo en cascada).
+- El despliegue de un cambio pequeño requiere redesplegar toda la aplicación.
+- A medida que crece el sistema, la base de código se vuelve más difícil de mantener (big ball of mud).
 
 ---
 
@@ -58,17 +52,17 @@ Todo el sistema se construye como una única aplicación desplegable. Un solo se
 Cada función del sistema se divide en servicios extremadamente granulares y autónomos: servicio de autenticación, servicio de cursos, servicio de lecciones, servicio de evaluaciones, servicio de adaptación, servicio de foros, servicio de notificaciones, servicio de analítica, etc. Cada microservicio tiene su propia base de datos y se despliega independientemente.
 
 **Pros:**
-- ✅ Máxima escalabilidad selectiva: cada microservicio escala de forma independiente.
-- ✅ Aislamiento de fallos extremo: la caída de un servicio no afecta los demás.
-- ✅ Tecnología heterogénea: cada servicio puede usar el lenguaje y base de datos más adecuados.
-- ✅ Despliegues completamente independientes.
+- Máxima escalabilidad selectiva: cada microservicio escala de forma independiente.
+- Aislamiento de fallos extremo: la caída de un servicio no afecta los demás.
+- Tecnología heterogénea: cada servicio puede usar el lenguaje y base de datos más adecuados.
+- Despliegues completamente independientes.
 
 **Contras:**
-- ❌ Altísima complejidad operacional: requiere service mesh, service discovery, distributed tracing, API gateway, etc.
-- ❌ El overhead de gestionar 10+ servicios con un equipo de 3-4 personas es inmanejable en el MVP.
-- ❌ La comunicación entre servicios agrega latencia de red que puede violar DR-01 (≤ 2 seg).
-- ❌ La consistencia de datos entre servicios es compleja (eventual consistency, sagas pattern).
-- ❌ Costo de infraestructura significativamente mayor.
+- Altísima complejidad operacional: requiere service mesh, service discovery, distributed tracing, API gateway, etc.
+- El overhead de gestionar 10+ servicios con un equipo de 3-4 personas es inmanejable en el MVP.
+- La comunicación entre servicios agrega latencia de red que puede violar DR-01 (≤ 2 seg).
+- La consistencia de datos entre servicios es compleja (eventual consistency, sagas pattern).
+- Costo de infraestructura significativamente mayor.
 
 ---
 
@@ -78,17 +72,17 @@ Cada función del sistema se divide en servicios extremadamente granulares y aut
 El sistema se divide en un conjunto reducido de servicios de grano grueso (4-6 servicios), cada uno responsable de un dominio funcional bien delimitado. Los servicios comparten una base de datos relacional con schemas separados por dominio. Se expone un API Gateway como punto de entrada único para los clientes. El frontend es una SPA que consume los servicios a través del gateway.
 
 **Pros:**
-- ✅ Balance óptimo entre independencia y complejidad operacional.
-- ✅ Escalabilidad selectiva por servicio según la carga del dominio.
-- ✅ Aislamiento de fallos a nivel de dominio: la caída del servicio de analítica no afecta el motor adaptativo.
-- ✅ Complejidad operacional manejable por un equipo de 3-4 personas.
-- ✅ Despliegues independientes por servicio.
-- ✅ API Gateway centraliza autenticación, rate limiting y enrutamiento.
+- Balance óptimo entre independencia y complejidad operacional.
+- Escalabilidad selectiva por servicio según la carga del dominio.
+- Aislamiento de fallos a nivel de dominio: la caída del servicio de analítica no afecta el motor adaptativo.
+- Complejidad operacional manejable por un equipo de 3-4 personas.
+- Despliegues independientes por servicio.
+- API Gateway centraliza autenticación, rate limiting y enrutamiento.
 
 **Contras:**
-- ❌ La base de datos compartida crea cierto acoplamiento entre servicios.
-- ❌ Se requiere gestión de comunicación entre servicios (REST síncrono + mensajería asíncrona).
-- ❌ Más complejo que un monolito, aunque significativamente menos que microservicios.
+- La base de datos compartida crea cierto acoplamiento entre servicios.
+- Se requiere gestión de comunicación entre servicios (REST síncrono + mensajería asíncrona).
+- Más complejo que un monolito, aunque significativamente menos que microservicios.
 
 ---
 
@@ -131,14 +125,14 @@ La Service-Based Architecture representa el punto óptimo en el espectro monolit
 
 ## Consecuencias
 
-### ✅ Positivas:
+### Positivas:
 
 1. **Escalabilidad selectiva:** El Assessment & Adaptive Service puede escalar a 10 instancias durante períodos de evaluación sin escalar el resto de servicios, reduciendo costos en momentos de baja carga.
 2. **Aislamiento de fallos:** Una falla en el Collaboration Service (foros) no impide que los estudiantes accedan a contenidos y evaluaciones.
 3. **Despliegues independientes:** Un bug fix en el Analytics Service puede desplegarse sin afectar a los demás servicios ni requerir ventana de mantenimiento extendida.
 4. **Evolución incremental:** Nuevas funcionalidades (ej. videollamadas, IA generativa) pueden agregarse como nuevos servicios sin modificar los existentes.
 
-### ⚠️ Negativas (y mitigaciones):
+### Negativas (y mitigaciones):
 
 1. **Base de datos compartida crea acoplamiento**
    - **Riesgo:** Cambios en el schema de un dominio pueden afectar otros servicios que comparten la misma base de datos.
@@ -204,11 +198,3 @@ El costo de infraestructura también es significativamente mayor: cada microserv
 - Enunciado del proyecto - Arquitectura de Software, Pontificia Universidad Javeriana, 2026.
 
 ---
-
-**Estado final:** ACEPTADO ✅
-
-**Firmas del equipo:**
-- [Nombre 1]: __________ - Fecha: ___/___/___
-- [Nombre 2]: __________ - Fecha: ___/___/___
-- [Nombre 3]: __________ - Fecha: ___/___/___
-- [Nombre 4]: __________ - Fecha: ___/___/___
