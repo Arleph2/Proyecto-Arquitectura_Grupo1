@@ -1,11 +1,5 @@
 # ADR-003: Implementar Motor Adaptativo con Reglas Configurables y Mensajería Asíncrona (RabbitMQ)
 
-**Estado:** Aceptado  
-**Fecha:** 22/03/2026  
-**Decisores:** [Nombre 1], [Nombre 2], [Nombre 3], [Nombre 4]  
-**Relacionado con:** DR-01, DR-02, DR-05, DR-07, RF-03, RNF-01, RNF-03, RNF-05  
-**Grupo:** [Número de grupo]
-
 ---
 
 ## Contexto y Problema
@@ -36,15 +30,15 @@ Adicionalmente, el motor de adaptación debe ser configurable por los docentes (
 Las reglas de adaptación se definen directamente en el código del servicio. Cuando el estudiante envía una evaluación, el Assessment Service llama síncronamente (REST) al Analytics Service y al Course Service antes de responder al estudiante. El resultado de la adaptación se computa en el mismo hilo de la petición.
 
 **Pros:**
-- ✅ Simplicidad: no se requiere infraestructura adicional (no hay message broker).
-- ✅ Consistencia inmediata: cuando el estudiante recibe la respuesta, todos los sistemas están actualizados.
-- ✅ Trazabilidad simple: el flujo es lineal y fácil de depurar.
+- Simplicidad: no se requiere infraestructura adicional (no hay message broker).
+- Consistencia inmediata: cuando el estudiante recibe la respuesta, todos los sistemas están actualizados.
+- Trazabilidad simple: el flujo es lineal y fácil de depurar.
 
 **Contras:**
-- ❌ Latencia acumulada: si el Assessment Service llama a 3 servicios en secuencia, la latencia total puede superar los 2 segundos bajo carga (viola DR-01).
-- ❌ Acoplamiento temporal fuerte: si el Analytics Service cae, el estudiante no puede recibir su calificación (viola DR-03).
-- ❌ Las reglas hardcodeadas requieren redespliegue para cada cambio de configuración (viola DR-05 y RF-03).
-- ❌ No escala bien bajo picos: 5,000 peticiones simultáneas generan un fan-out de llamadas REST que puede saturar los servicios dependientes.
+- Latencia acumulada: si el Assessment Service llama a 3 servicios en secuencia, la latencia total puede superar los 2 segundos bajo carga (viola DR-01).
+- Acoplamiento temporal fuerte: si el Analytics Service cae, el estudiante no puede recibir su calificación (viola DR-03).
+- Las reglas hardcodeadas requieren redespliegue para cada cambio de configuración (viola DR-05 y RF-03).
+- No escala bien bajo picos: 5,000 peticiones simultáneas generan un fan-out de llamadas REST que puede saturar los servicios dependientes.
 
 ---
 
@@ -54,16 +48,16 @@ Las reglas de adaptación se definen directamente en el código del servicio. Cu
 Las reglas de adaptación se almacenan en PostgreSQL y se evalúan en tiempo de ejecución. El flujo síncrono se limita a lo esencial: calcular calificación + determinar el siguiente paso del recorrido (respuesta al estudiante en < 2 seg). Todo lo que no es crítico para la respuesta inmediata (actualizar analytics, notificar al docente, evaluar candidatos a tutores) se delega a eventos asíncronos mediante RabbitMQ. Los consumidores de los eventos procesan la información en background.
 
 **Pros:**
-- ✅ Latencia controlada: el camino crítico (calificación + siguiente paso) se resuelve síncronamente; el resto es asíncrono.
-- ✅ Desacoplamiento entre servicios: si el Analytics Service cae, el estudiante igual recibe su calificación; los datos se actualizarán cuando el servicio se recupere.
-- ✅ Reglas configurables por docentes sin redespliegue: las reglas están en la base de datos y se leen en tiempo de ejecución.
-- ✅ Escalabilidad del motor: RabbitMQ actúa como buffer durante picos; los consumidores procesan a su ritmo.
-- ✅ Resiliencia: RabbitMQ persiste los mensajes, garantizando que los eventos se procesen aunque un consumidor falle temporalmente.
+- Latencia controlada: el camino crítico (calificación + siguiente paso) se resuelve síncronamente; el resto es asíncrono.
+- Desacoplamiento entre servicios: si el Analytics Service cae, el estudiante igual recibe su calificación; los datos se actualizarán cuando el servicio se recupere.
+- Reglas configurables por docentes sin redespliegue: las reglas están en la base de datos y se leen en tiempo de ejecución.
+- Escalabilidad del motor: RabbitMQ actúa como buffer durante picos; los consumidores procesan a su ritmo.
+-  Resiliencia: RabbitMQ persiste los mensajes, garantizando que los eventos se procesen aunque un consumidor falle temporalmente.
 
 **Contras:**
-- ❌ Mayor complejidad: se requiere operar RabbitMQ (o usar un servicio administrado).
-- ❌ Consistencia eventual: el dashboard del estudiante puede tardar unos segundos en reflejar el resultado de la evaluación (aunque el estudiante ya conoce su calificación).
-- ❌ Debugging más complejo: el flujo distribuido requiere correlación de logs para rastrear el ciclo de vida de un evento.
+- Mayor complejidad: se requiere operar RabbitMQ (o usar un servicio administrado).
+- Consistencia eventual: el dashboard del estudiante puede tardar unos segundos en reflejar el resultado de la evaluación (aunque el estudiante ya conoce su calificación).
+- Debugging más complejo: el flujo distribuido requiere correlación de logs para rastrear el ciclo de vida de un evento.
 
 ---
 
@@ -73,15 +67,15 @@ Las reglas de adaptación se almacenan en PostgreSQL y se evalúan en tiempo de 
 En lugar de reglas configuradas por docentes, el sistema usa modelos de Machine Learning entrenados con datos históricos de aprendizaje para predecir el siguiente paso óptimo para cada estudiante (sistemas como DKT - Deep Knowledge Tracing).
 
 **Pros:**
-- ✅ Adaptación personalizada más precisa que las reglas manuales.
-- ✅ Puede descubrir patrones no evidentes para los docentes.
-- ✅ El modelo mejora con el tiempo a medida que acumula datos.
+- Adaptación personalizada más precisa que las reglas manuales.
+- Puede descubrir patrones no evidentes para los docentes.
+- El modelo mejora con el tiempo a medida que acumula datos.
 
 **Contras:**
-- ❌ Requiere grandes volúmenes de datos de entrenamiento que no existen en el MVP.
-- ❌ Complejidad técnica muy alta: requiere infraestructura de ML (entrenamiento, serving, monitoreo de drift).
-- ❌ Los docentes no pueden interpretar ni configurar las decisiones del modelo (caja negra).
-- ❌ Completamente fuera del alcance del MVP con un equipo de 3-4 personas.
+- Requiere grandes volúmenes de datos de entrenamiento que no existen en el MVP.
+- Complejidad técnica muy alta: requiere infraestructura de ML (entrenamiento, serving, monitoreo de drift).
+- Los docentes no pueden interpretar ni configurar las decisiones del modelo (caja negra).
+-  Completamente fuera del alcance del MVP con un equipo de 3-4 personas.
 
 ---
 
@@ -133,14 +127,14 @@ Descartamos el motor de ML porque no existe la infraestructura de datos ni la ca
 
 ## Consecuencias
 
-### ✅ Positivas:
+### Positivas:
 
 1. **Experiencia de usuario fluida bajo alta carga:** El estudiante recibe su calificación y el siguiente paso del recorrido en < 2 segundos, incluso cuando 5,000 usuarios envían evaluaciones simultáneamente.
 2. **Configurabilidad por docentes:** Los docentes pueden ajustar umbrales, materiales de refuerzo y contenidos avanzados desde la interfaz de administración de cursos, sin depender del equipo técnico.
 3. **Resiliencia del sistema:** La caída temporal del Analytics Service o del Collaboration Service no impide que los estudiantes completen evaluaciones ni reciban retroalimentación inmediata.
 4. **Buffer de carga con RabbitMQ:** Durante picos de evaluaciones (inicio/fin de semestre), RabbitMQ absorbe el volumen de eventos y los distribuye en el tiempo, evitando saturación de los servicios consumidores.
 
-### ⚠️ Negativas (y mitigaciones):
+### Negativas (y mitigaciones):
 
 1. **Consistencia eventual del dashboard de progreso**
    - **Riesgo:** El dashboard del estudiante puede tardar de 5 a 30 segundos en reflejar el resultado de la evaluación tras recibirlo.
@@ -204,10 +198,5 @@ El motor de ML fue descartado porque requiere un volumen mínimo de datos histó
 
 ---
 
-**Estado final:** ACEPTADO ✅
-
-**Firmas del equipo:**
-- [Nombre 1]: __________ - Fecha: ___/___/___
-- [Nombre 2]: __________ - Fecha: ___/___/___
 - [Nombre 3]: __________ - Fecha: ___/___/___
 - [Nombre 4]: __________ - Fecha: ___/___/___
