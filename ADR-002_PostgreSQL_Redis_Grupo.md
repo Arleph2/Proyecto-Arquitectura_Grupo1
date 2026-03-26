@@ -2,9 +2,6 @@
 
 **Estado:** Aceptado  
 **Fecha:** 22/03/2026  
-**Decisores:** [Nombre 1], [Nombre 2], [Nombre 3], [Nombre 4]  
-**Relacionado con:** DR-01, DR-03, DR-04, DR-05, RNF-01, RNF-02, RNF-04  
-**Grupo:** [Número de grupo]
 
 ---
 
@@ -38,17 +35,17 @@ Necesitamos decidir la estrategia de persistencia que garantice consistencia, re
 Sistema de gestión de base de datos relacional open-source, altamente confiable y con soporte completo para ACID, transacciones complejas, joins, constraints e índices avanzados. Ampliamente usado en producción a escala por empresas como Instagram, Airbnb y Notion.
 
 **Pros:**
-- ✅ ACID completo: garantiza consistencia de datos académicos (calificaciones, progreso).
-- ✅ Consultas relacionales complejas con JOINs optimizados: ideal para el motor adaptativo.
-- ✅ Schemas separados por dominio dentro de una sola instancia (útil para Service-Based Architecture).
-- ✅ Soporte robusto para datos JSON (JSONB) cuando se necesite flexibilidad de esquema.
-- ✅ Maduro, bien documentado y con amplia comunidad.
-- ✅ Disponible como servicio administrado (AWS RDS, Google Cloud SQL) con replicación y backups automáticos.
+- ACID completo: garantiza consistencia de datos académicos (calificaciones, progreso).
+- Consultas relacionales complejas con JOINs optimizados: ideal para el motor adaptativo.
+- Schemas separados por dominio dentro de una sola instancia (útil para Service-Based Architecture).
+- Soporte robusto para datos JSON (JSONB) cuando se necesite flexibilidad de esquema.
+- Maduro, bien documentado y con amplia comunidad.
+- Disponible como servicio administrado (AWS RDS, Google Cloud SQL) con replicación y backups automáticos.
 
 **Contras:**
-- ❌ Escalabilidad horizontal de escrituras es compleja (requiere sharding manual o Citus).
-- ❌ No es la mejor opción para datos de alta velocidad sin esquema fijo (ej. logs de actividad en tiempo real).
-- ❌ Requiere migraciones de esquema cuidadosas cuando el modelo de datos evoluciona.
+- Escalabilidad horizontal de escrituras es compleja (requiere sharding manual o Citus).
+- No es la mejor opción para datos de alta velocidad sin esquema fijo (ej. logs de actividad en tiempo real).
+- Requiere migraciones de esquema cuidadosas cuando el modelo de datos evoluciona.
 
 ---
 
@@ -58,17 +55,17 @@ Sistema de gestión de base de datos relacional open-source, altamente confiable
 Base de datos NoSQL orientada a documentos. Almacena datos en formato BSON (similar a JSON). Ofrece alta flexibilidad de esquema y escala horizontalmente mediante sharding nativo.
 
 **Pros:**
-- ✅ Flexibilidad de esquema: ideal cuando la estructura de datos puede variar (ej. distintos tipos de preguntas en evaluaciones).
-- ✅ Escala horizontal nativa mediante sharding.
-- ✅ Rendimiento de escritura alto para datos de alta velocidad.
-- ✅ Ideal para datos jerárquicos naturales (ej. un curso con sus módulos y lecciones anidados).
+- Flexibilidad de esquema: ideal cuando la estructura de datos puede variar (ej. distintos tipos de preguntas en evaluaciones).
+- Escala horizontal nativa mediante sharding.
+- Rendimiento de escritura alto para datos de alta velocidad.
+- Ideal para datos jerárquicos naturales (ej. un curso con sus módulos y lecciones anidados).
 
 **Contras:**
-- ❌ Soporte limitado para transacciones multi-documento (aunque mejoró en versiones recientes, es más complejo).
-- ❌ No soporta JOINs nativos eficientes: el motor adaptativo requeriría múltiples consultas o lógica de aplicación compleja.
-- ❌ Consistencia eventual en configuraciones distribuidas puede ser problemática para datos de calificaciones.
-- ❌ Mayor costo de licenciamiento en producción con MongoDB Atlas a escala.
-- ❌ El equipo requiere curva de aprendizaje adicional para modelado de datos NoSQL.
+- Soporte limitado para transacciones multi-documento (aunque mejoró en versiones recientes, es más complejo).
+- No soporta JOINs nativos eficientes: el motor adaptativo requeriría múltiples consultas o lógica de aplicación compleja.
+- Consistencia eventual en configuraciones distribuidas puede ser problemática para datos de calificaciones.
+- Mayor costo de licenciamiento en producción con MongoDB Atlas a escala.
+- El equipo requiere curva de aprendizaje adicional para modelado de datos NoSQL.
 
 ---
 
@@ -78,17 +75,17 @@ Base de datos NoSQL orientada a documentos. Almacena datos en formato BSON (simi
 Servicio de base de datos NoSQL completamente administrado de AWS. Ofrece escalabilidad automática, disponibilidad multi-región y latencia de milisegundos a cualquier escala.
 
 **Pros:**
-- ✅ Latencia garantizada en milisegundos a cualquier escala.
-- ✅ Escalabilidad automática sin gestión de infraestructura.
-- ✅ Alta disponibilidad multi-región nativa.
-- ✅ Modelo de pago por uso (pay-per-request).
+- Latencia garantizada en milisegundos a cualquier escala.
+- Escalabilidad automática sin gestión de infraestructura.
+- Alta disponibilidad multi-región nativa.
+- Modelo de pago por uso (pay-per-request).
 
 **Contras:**
-- ❌ Muy limitado para consultas relacionales: sin JOINs ni transacciones complejas entre tablas.
-- ❌ El diseño de acceso patterns debe definirse desde el inicio y es difícil de cambiar.
-- ❌ Vendor lock-in con AWS: migrar a otro proveedor cloud es costoso.
-- ❌ El costo escala con el volumen de lectura/escritura y puede ser impredecible.
-- ❌ No es adecuado para el motor adaptativo que requiere consultas analíticas complejas.
+- Muy limitado para consultas relacionales: sin JOINs ni transacciones complejas entre tablas.
+- El diseño de acceso patterns debe definirse desde el inicio y es difícil de cambiar.
+- Vendor lock-in con AWS: migrar a otro proveedor cloud es costoso.
+- El costo escala con el volumen de lectura/escritura y puede ser impredecible.
+- No es adecuado para el motor adaptativo que requiere consultas analíticas complejas.
 
 ---
 
@@ -136,14 +133,14 @@ Redis complementa a PostgreSQL aliviando la carga de lecturas frecuentes y repet
 
 ## Consecuencias
 
-### ✅ Positivas:
+### Positivas:
 
 1. **Consistencia garantizada para datos académicos:** Las calificaciones y el progreso del estudiante se almacenan con garantías ACID completas. Ningún estudiante verá una calificación incorrecta o perderá su progreso.
 2. **Rendimiento de lectura mejorado con Redis:** Las operaciones de lectura frecuente (verificar sesión, cargar lista de cursos) se resuelven desde caché en < 10ms, sin impactar la base de datos principal.
 3. **Alta disponibilidad con RDS Multi-AZ:** El failover automático garantiza que la plataforma se recupere de fallas de infraestructura en menos de 60 segundos, contribuyendo al 99.5% de disponibilidad requerido.
 4. **Separación de carga:** Las read replicas de PostgreSQL atienden las consultas analíticas sin competir con las escrituras del motor adaptativo y las evaluaciones.
 
-### ⚠️ Negativas (y mitigaciones):
+### Negativas (y mitigaciones):
 
 1. **Base de datos compartida entre servicios crea acoplamiento**
    - **Riesgo:** Un cambio de schema en el dominio de evaluaciones podría afectar al dominio de analítica si comparten tablas.
@@ -206,10 +203,3 @@ DynamoDB fue descartado principalmente por el vendor lock-in con AWS y la inflex
 
 ---
 
-**Estado final:** ACEPTADO ✅
-
-**Firmas del equipo:**
-- [Nombre 1]: __________ - Fecha: ___/___/___
-- [Nombre 2]: __________ - Fecha: ___/___/___
-- [Nombre 3]: __________ - Fecha: ___/___/___
-- [Nombre 4]: __________ - Fecha: ___/___/___
