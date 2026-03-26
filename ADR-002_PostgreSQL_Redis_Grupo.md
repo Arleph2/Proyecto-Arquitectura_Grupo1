@@ -1,8 +1,5 @@
 # ADR-002: Adoptar PostgreSQL como Base de Datos Principal con Redis para Caché
 
-**Estado:** Aceptado  
-**Fecha:** 22/03/2026  
-
 ---
 
 ## Contexto y Problema
