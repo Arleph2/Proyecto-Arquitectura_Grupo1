@@ -43,16 +43,8 @@ Este documento aplica el **Architecture Tradeoff Analysis Method (ATAM)** a la a
 
 El resultado del ATAM no es una validación de que la arquitectura es "correcta", sino un mapa documentado de qué decisiones son sólidas, cuáles presentan riesgos y dónde existen tensiones entre atributos de calidad que el equipo debe gestionar conscientemente.
 
-### 1.2 Participantes del Análisis
 
-| Rol ATAM | Nombre | Responsabilidad |
-|----------|--------|-----------------|
-| **Equipo de evaluación** | [Nombre 1], [Nombre 2] | Analiza la arquitectura de forma crítica |
-| **Arquitecto** | [Nombre 3] | Presenta y defiende las decisiones arquitecturales |
-| **Representante del negocio** | [Nombre 4] | Valida que los drivers del SRS estén cubiertos |
-| **Moderador** | [Nombre 1] | Facilita las sesiones de análisis |
-
-### 1.3 Fases del ATAM Aplicadas
+### 1.2 Fases del ATAM Aplicadas
 
 El ATAM completo consta de 9 pasos. En el contexto académico de este proyecto se aplican los pasos esenciales:
 
@@ -68,7 +60,7 @@ El ATAM completo consta de 9 pasos. En el contexto académico de este proyecto s
 | 8. Analizar los enfoques nuevamente | Análisis de escenarios adicionales | Sección 6 |
 | 9. Presentar resultados | Resumen de hallazgos | Sección 10 |
 
-### 1.4 Referencias
+### 1.3 Referencias
 
 - Bass, L., Clements, P. & Kazman, R. (2012). *Software Architecture in Practice* (3rd ed.). Addison-Wesley. Cap. 21: ATAM.
 - Kazman, R., Klein, M. & Clements, P. (2000). *ATAM: Method for Architecture Evaluation*. CMU/SEI-2000-TR-004.
