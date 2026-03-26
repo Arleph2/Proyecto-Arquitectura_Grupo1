@@ -740,9 +740,6 @@ La arquitectura demuestra madurez en las siguientes áreas:
 
 ---
 
-
----
-
 **Fin del Documento ATAM**
 
 ---
