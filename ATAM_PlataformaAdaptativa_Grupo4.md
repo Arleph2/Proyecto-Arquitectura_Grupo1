@@ -7,8 +7,8 @@
 
 
 **Documentos base:**
-- SRS v1.0 — `Taller_SRS_PlataformaAdaptativa_GrupoX.md`
-- SAD v2.0 — `Taller_SAD_PlataformaAdaptativa_GrupoX.md`
+- SRS v1.0 — `SRS_PlataformaAdaptativa_Grupo1.md`
+- SAD v2.0 — `SAD_PlataformaAdaptativa_Grupo1.md`
 - ADR-001 — Service-Based Architecture
 - ADR-002 — PostgreSQL + Redis
 - ADR-003 — Motor Adaptativo + RabbitMQ
