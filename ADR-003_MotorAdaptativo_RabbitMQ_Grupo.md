@@ -197,6 +197,3 @@ El motor de ML fue descartado porque requiere un volumen mínimo de datos histó
 - Kizilcec, R., Pérez-Sanagustín, M. & Maldonado, J. (2017). *Self-regulated learning strategies predict learner behavior and goal attainment in Massive Open Online Courses*. Computers & Education, 104.
 
 ---
-
-- [Nombre 3]: __________ - Fecha: ___/___/___
-- [Nombre 4]: __________ - Fecha: ___/___/___
