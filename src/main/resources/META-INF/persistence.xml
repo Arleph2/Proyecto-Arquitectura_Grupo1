@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
+                                 https://jakarta.ee/xml/ns/persistence/persistence_3_1.xsd"
+             version="3.1">
+
+    <!-- content_db: catalog and content data -->
+    <persistence-unit name="ContentPU" transaction-type="JTA">
+        <jta-data-source>java:jboss/datasources/ContentDS</jta-data-source>
+
+        <class>org.eclipse.jakarta.entity.content.Course</class>
+        <class>org.eclipse.jakarta.entity.content.Module</class>
+        <class>org.eclipse.jakarta.entity.content.Lesson</class>
+        <class>org.eclipse.jakarta.entity.content.LessonDependency</class>
+        <class>org.eclipse.jakarta.entity.content.Content</class>
+        <class>org.eclipse.jakarta.entity.content.VideoContent</class>
+        <class>org.eclipse.jakarta.entity.content.ArticleContent</class>
+        <class>org.eclipse.jakarta.entity.content.FileContent</class>
+        <class>org.eclipse.jakarta.entity.content.Quiz</class>
+        <class>org.eclipse.jakarta.entity.content.Question</class>
+        <class>org.eclipse.jakarta.entity.content.Answer</class>
+        <exclude-unlisted-classes>true</exclude-unlisted-classes>
+
+        <properties>
+            <property name="jakarta.persistence.schema-generation.database.action" value="none"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>
+        </properties>
+    </persistence-unit>
+
+    <!-- user_db: user activity and progress data -->
+    <persistence-unit name="UserPU" transaction-type="JTA">
+        <jta-data-source>java:jboss/datasources/UserDS</jta-data-source>
+
+        <class>org.eclipse.jakarta.entity.user.User</class>
+        <class>org.eclipse.jakarta.entity.user.Enrollment</class>
+        <class>org.eclipse.jakarta.entity.user.LessonProgress</class>
+        <class>org.eclipse.jakarta.entity.user.QuizAttempt</class>
+        <class>org.eclipse.jakarta.entity.user.QuestionAttempt</class>
+        <class>org.eclipse.jakarta.entity.user.Recommendation</class>
+        <exclude-unlisted-classes>true</exclude-unlisted-classes>
+
+        <properties>
+            <property name="jakarta.persistence.schema-generation.database.action" value="none"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>
+        </properties>
+    </persistence-unit>
+
+</persistence>
