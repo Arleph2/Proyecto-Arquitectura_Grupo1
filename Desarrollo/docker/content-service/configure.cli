@@ -1,0 +1,28 @@
+embed-server --server-config=standalone-full.xml --std-out=echo
+
+module add --name=org.postgresql \
+  --resources=/tmp/postgresql.jar \
+  --dependencies=javax.api,javax.transaction.api
+
+/subsystem=datasources/jdbc-driver=postgresql:add( \
+  driver-name=postgresql, \
+  driver-module-name=org.postgresql, \
+  driver-class-name=org.postgresql.Driver, \
+  driver-xa-datasource-class-name=org.postgresql.xa.PGXADataSource)
+
+data-source add \
+  --name=ContentDS \
+  --jndi-name=java:jboss/datasources/ContentDS \
+  --driver-name=postgresql \
+  --connection-url=jdbc:postgresql://content_db:5432/content_db \
+  --user-name=content_user \
+  --password=content_pass \
+  --use-ccm=true \
+  --min-pool-size=5 \
+  --max-pool-size=20 \
+  --validate-on-match=true \
+  --background-validation=false \
+  --valid-connection-checker-class-name=org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker \
+  --exception-sorter-class-name=org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter
+
+stop-embedded-server

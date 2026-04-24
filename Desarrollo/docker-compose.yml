@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+
+  # ─── Databases ──────────────────────────────────────────────────────────────
+
+  content_db:
+    image: postgres:16
+    container_name: content_db
+    environment:
+      POSTGRES_DB: content_db
+      POSTGRES_USER: content_user
+      POSTGRES_PASSWORD: content_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - content_db_data:/var/lib/postgresql/data
+      - ./db/content:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U content_user -d content_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  user_db:
+    image: postgres:16
+    container_name: user_db
+    environment:
+      POSTGRES_DB: user_db
+      POSTGRES_USER: user_user
+      POSTGRES_PASSWORD: user_pass
+    ports:
+      - "5433:5432"
+    volumes:
+      - user_db_data:/var/lib/postgresql/data
+      - ./db/user:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user_user -d user_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Services ───────────────────────────────────────────────────────────────
+
+  content-service:
+    build:
+      context: .
+      dockerfile: docker/content-service/Dockerfile
+    container_name: content-service
+    ports:
+      - "8081:8080"
+      - "9991:9990"
+    depends_on:
+      content_db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9990/health/ready || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  user-service:
+    build:
+      context: .
+      dockerfile: docker/user-service/Dockerfile
+    container_name: user-service
+    ports:
+      - "8082:8080"
+      - "9992:9990"
+    depends_on:
+      user_db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9990/health/ready || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  simulation-service:
+    build:
+      context: .
+      dockerfile: docker/simulation-service/Dockerfile
+    container_name: simulation-service
+    ports:
+      - "8080:8080"
+      - "9990:9990"
+    depends_on:
+      content-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+
+volumes:
+  content_db_data:
+  user_db_data:
