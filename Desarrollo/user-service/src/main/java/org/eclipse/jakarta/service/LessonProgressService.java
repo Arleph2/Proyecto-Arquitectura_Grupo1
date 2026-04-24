@@ -49,4 +49,5 @@ public class LessonProgressService {
         lp.setCompletedAt(LocalDateTime.now());
         lessonProgressRepository.save(lp);
     }
+
 }

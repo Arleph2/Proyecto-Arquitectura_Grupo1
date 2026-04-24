@@ -46,4 +46,12 @@ public class LessonController {
                 .map(dto -> Response.ok(dto).build())
                 .orElse(Response.status(Response.Status.NOT_FOUND).build());
     }
+
+    @GET
+    @Path("/contents/{contentId}/file")
+    public Response getFile(@PathParam("contentId") Long contentId) {
+        return lessonService.findFile(contentId)
+                .map(dto -> Response.ok(dto).build())
+                .orElse(Response.status(Response.Status.NOT_FOUND).build());
+    }
 }

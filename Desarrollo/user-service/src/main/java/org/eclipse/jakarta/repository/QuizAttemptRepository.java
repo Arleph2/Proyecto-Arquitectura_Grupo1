@@ -30,4 +30,5 @@ public class QuizAttemptRepository {
     public void saveQuestionAttempts(List<QuestionAttempt> attempts) {
         attempts.forEach(em::persist);
     }
+
 }

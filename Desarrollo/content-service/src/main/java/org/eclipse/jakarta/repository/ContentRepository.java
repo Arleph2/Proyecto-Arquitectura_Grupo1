@@ -3,9 +3,10 @@ package org.eclipse.jakarta.repository;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import org.eclipse.jakarta.entity.content.Content;
-import org.eclipse.jakarta.entity.content.VideoContent;
 import org.eclipse.jakarta.entity.content.ArticleContent;
+import org.eclipse.jakarta.entity.content.Content;
+import org.eclipse.jakarta.entity.content.FileContent;
+import org.eclipse.jakarta.entity.content.VideoContent;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,4 +39,13 @@ public class ContentRepository {
                 .setParameter("contentId", contentId)
                 .getResultStream().findFirst();
     }
+
+    public Optional<FileContent> findFileByContentId(Long contentId) {
+        return em.createQuery(
+                "SELECT f FROM FileContent f WHERE f.content.id = :contentId",
+                FileContent.class)
+                .setParameter("contentId", contentId)
+                .getResultStream().findFirst();
+    }
+
 }

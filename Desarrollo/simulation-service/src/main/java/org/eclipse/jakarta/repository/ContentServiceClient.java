@@ -37,6 +37,10 @@ public interface ContentServiceClient {
     ArticleContentDto getArticle(@PathParam("contentId") Long contentId);
 
     @GET
+    @Path("/contents/{contentId}/file")
+    FileContentDto getFile(@PathParam("contentId") Long contentId);
+
+    @GET
     @Path("/contents/{contentId}/quiz")
     QuizDto getQuiz(@PathParam("contentId") Long contentId);
 

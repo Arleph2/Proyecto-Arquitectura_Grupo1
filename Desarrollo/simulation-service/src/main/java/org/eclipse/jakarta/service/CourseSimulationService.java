@@ -72,10 +72,18 @@ public class CourseSimulationService {
         return switch (content.getType()) {
             case "VIDEO"   -> simulateVideo(content);
             case "ARTICLE" -> simulateArticle(content);
-            case "FILE"    -> ContentSimulationResultDto.file(content.getId(), 30);
+            case "FILE"    -> simulateFile(content);
             case "QUIZ"    -> simulateQuiz(userId, content);
             default        -> ContentSimulationResultDto.file(content.getId(), 0);
         };
+    }
+
+    private ContentSimulationResultDto simulateFile(ContentDto content) {
+        int readTime = fetchOrDefault(() -> {
+            FileContentDto f = contentClient.getFile(content.getId());
+            return f != null ? 60 : 30;
+        }, 30);
+        return ContentSimulationResultDto.file(content.getId(), readTime);
     }
 
     private ContentSimulationResultDto simulateVideo(ContentDto content) {

@@ -34,4 +34,8 @@ public class LessonService {
     public Optional<ArticleContentDto> findArticle(Long contentId) {
         return contentRepository.findArticleByContentId(contentId).map(ArticleContentDto::from);
     }
+
+    public Optional<FileContentDto> findFile(Long contentId) {
+        return contentRepository.findFileByContentId(contentId).map(FileContentDto::from);
+    }
 }
