@@ -5,6 +5,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.eclipse.jakarta.entity.content.ArticleContent;
 import org.eclipse.jakarta.entity.content.Content;
+import org.eclipse.jakarta.entity.content.ContentPurpose;
 import org.eclipse.jakarta.entity.content.FileContent;
 import org.eclipse.jakarta.entity.content.VideoContent;
 import java.util.List;
@@ -18,9 +19,19 @@ public class ContentRepository {
 
     public List<Content> findByLessonIdOrdered(Long lessonId) {
         return em.createQuery(
-                "SELECT c FROM Content c WHERE c.lesson.id = :lessonId ORDER BY c.position",
+                "SELECT c FROM Content c WHERE c.lesson.id = :lessonId AND c.purpose = :purpose ORDER BY c.position",
                 Content.class)
                 .setParameter("lessonId", lessonId)
+                .setParameter("purpose", ContentPurpose.LESSON)
+                .getResultList();
+    }
+
+    public List<Content> findReinforcementByLessonId(Long lessonId) {
+        return em.createQuery(
+                "SELECT c FROM Content c WHERE c.lesson.id = :lessonId AND c.purpose = :purpose ORDER BY c.position",
+                Content.class)
+                .setParameter("lessonId", lessonId)
+                .setParameter("purpose", ContentPurpose.REINFORCEMENT)
                 .getResultList();
     }
 

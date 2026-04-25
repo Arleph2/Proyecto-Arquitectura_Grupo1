@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="title">Contenido</ui:define>
+
+    <ui:define name="content">
+        <div class="page-title">Explorador de Contenido</div>
+
+        <!-- Module selection -->
+        <p:panel header="Selección de Módulo" style="margin-bottom:1rem;">
+            <h:form id="moduleForm">
+                <p:panelGrid columns="3" style="width:100%;" columnClasses="col-4,col-4,col-4">
+                    <p:outputLabel for="moduleSel" value="Módulo:"/>
+                    <p:selectOneMenu id="moduleSel" value="#{contentBean.selectedModuleId}" style="width:100%;">
+                        <f:selectItem itemLabel="— seleccione un módulo —" itemValue="#{null}" noSelectionOption="true"/>
+                        <f:selectItems value="#{contentBean.modules}" var="m"
+                                       itemValue="#{m.id}" itemLabel="#{m.title}"/>
+                        <p:ajax event="change" listener="#{contentBean.onModuleSelect}"
+                                update="lessonPanel contentsPanel" process="@this"/>
+                    </p:selectOneMenu>
+                    <p:outputLabel value="Curso: Estructuras de Datos (ID #{contentBean.courseId})"/>
+                </p:panelGrid>
+            </h:form>
+        </p:panel>
+
+        <!-- Lessons -->
+        <p:panel id="lessonPanel" header="Lecciones" style="margin-bottom:1rem;"
+                 rendered="#{contentBean.lessonsVisible}">
+            <p:outputLabel value="Módulo: #{contentBean.selectedModuleTitle}" style="font-weight:600; display:block; margin-bottom:.75rem;"/>
+            <h:form id="lessonForm">
+                <p:dataTable value="#{contentBean.lessons}" var="lesson"
+                             stripedRows="true" hover="true"
+                             emptyMessage="No hay lecciones en este módulo.">
+                    <p:column headerText="#" style="width:60px;">
+                        <h:outputText value="#{lesson.position}"/>
+                    </p:column>
+                    <p:column headerText="Lección">
+                        <h:outputText value="#{lesson.title}"/>
+                    </p:column>
+                    <p:column headerText="Acción" style="width:130px;">
+                        <p:commandButton value="Ver contenido" icon="pi pi-eye"
+                                         styleClass="p-button-sm p-button-outlined"
+                                         action="#{contentBean.onLessonSelect}"
+                                         update="contentsPanel lessonForm"
+                                         process="@form">
+                            <f:setPropertyActionListener target="#{contentBean.selectedLessonId}"
+                                                         value="#{lesson.id}"/>
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+            </h:form>
+        </p:panel>
+
+        <!-- Contents -->
+        <p:panel id="contentsPanel" rendered="#{contentBean.contentsVisible}">
+            <f:facet name="header">
+                <h:outputText value="Contenidos: #{contentBean.selectedLessonTitle}"/>
+            </f:facet>
+
+            <p:tabView style="margin-top:.5rem;">
+                <p:tab title="Contenido de la Lección (#{contentBean.contents.size()})">
+                    <p:dataTable value="#{contentBean.contents}" var="c"
+                                 stripedRows="true"
+                                 emptyMessage="Esta lección no tiene contenido.">
+                        <p:column headerText="ID" style="width:70px;">
+                            <h:outputText value="#{c.id}"/>
+                        </p:column>
+                        <p:column headerText="Posición" style="width:90px;">
+                            <h:outputText value="#{c.position}"/>
+                        </p:column>
+                        <p:column headerText="Tipo">
+                            <h:outputText value="#{c.type}"/>
+                        </p:column>
+                    </p:dataTable>
+                </p:tab>
+
+                <p:tab title="Material de Refuerzo (#{contentBean.reinforcementContents.size()})">
+                    <p:dataTable value="#{contentBean.reinforcementContents}" var="r"
+                                 stripedRows="true"
+                                 emptyMessage="Esta lección no tiene material de refuerzo.">
+                        <p:column headerText="ID" style="width:70px;">
+                            <h:outputText value="#{r.id}"/>
+                        </p:column>
+                        <p:column headerText="Posición" style="width:90px;">
+                            <h:outputText value="#{r.position}"/>
+                        </p:column>
+                        <p:column headerText="Tipo">
+                            <h:outputText value="#{r.type}"/>
+                        </p:column>
+                    </p:dataTable>
+                </p:tab>
+            </p:tabView>
+        </p:panel>
+
+    </ui:define>
+
+</ui:composition>
+</html>

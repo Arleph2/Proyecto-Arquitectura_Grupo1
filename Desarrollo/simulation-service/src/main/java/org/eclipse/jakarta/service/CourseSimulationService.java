@@ -5,6 +5,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.WebApplicationException;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.eclipse.jakarta.repository.ContentServiceClient;
+import org.eclipse.jakarta.repository.RecommendationServiceClient;
 import org.eclipse.jakarta.repository.UserServiceClient;
 import org.eclipse.jakarta.dto.content.*;
 import org.eclipse.jakarta.dto.simulation.*;
@@ -19,6 +20,7 @@ public class CourseSimulationService {
 
     @Inject @RestClient private ContentServiceClient contentClient;
     @Inject @RestClient private UserServiceClient userClient;
+    @Inject @RestClient private RecommendationServiceClient recommendationClient;
 
     public SimulationResultDto simulate(Long enrollmentId) {
         EnrollmentDto enrollment = userClient.getEnrollment(enrollmentId);
@@ -28,7 +30,7 @@ public class CourseSimulationService {
         List<ModuleSimulationResultDto> moduleResults = new ArrayList<>(modules.size());
 
         for (ModuleDto module : modules) {
-            moduleResults.add(simulateModule(enrollment.getUserId(), module));
+            moduleResults.add(simulateModule(enrollmentId, enrollment.getUserId(), module));
         }
 
         userClient.updateProgress(enrollmentId, new UpdateProgressRequestDto(100.0));
@@ -37,18 +39,18 @@ public class CourseSimulationService {
                 enrollment.getCourseId(), moduleResults);
     }
 
-    private ModuleSimulationResultDto simulateModule(Long userId, ModuleDto module) {
+    private ModuleSimulationResultDto simulateModule(Long enrollmentId, Long userId, ModuleDto module) {
         List<LessonDto> lessons = contentClient.getLessons(module.getId());
         List<LessonSimulationResultDto> lessonResults = new ArrayList<>(lessons.size());
 
         for (LessonDto lesson : lessons) {
-            lessonResults.add(simulateLesson(userId, lesson));
+            lessonResults.add(simulateLesson(enrollmentId, userId, lesson));
         }
 
         return new ModuleSimulationResultDto(module.getId(), module.getTitle(), lessonResults);
     }
 
-    private LessonSimulationResultDto simulateLesson(Long userId, LessonDto lesson) {
+    private LessonSimulationResultDto simulateLesson(Long enrollmentId, Long userId, LessonDto lesson) {
         LessonProgressDto progress = userClient.startLesson(
                 new StartLessonRequestDto(userId, lesson.getId()));
 
@@ -63,6 +65,12 @@ public class CourseSimulationService {
         }
 
         userClient.completeLesson(progress.getId(), new CompleteLessonRequestDto(totalTimeSpent));
+
+        try {
+            recommendationClient.analyzeLesson(enrollmentId, lesson.getId());
+        } catch (Exception e) {
+            // recommendation analysis failure must not abort the simulation
+        }
 
         return new LessonSimulationResultDto(lesson.getId(), lesson.getTitle(),
                 contentResults, totalTimeSpent);

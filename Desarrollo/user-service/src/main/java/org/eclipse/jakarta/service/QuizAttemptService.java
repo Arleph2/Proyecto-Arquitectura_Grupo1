@@ -18,6 +18,12 @@ public class QuizAttemptService {
     @EJB private QuizAttemptRepository quizAttemptRepository;
     @EJB private UserRepository userRepository;
 
+    public List<QuizAttemptResponseDto> findAllByUserId(Long userId) {
+        return quizAttemptRepository.findByUserId(userId).stream()
+                .map(QuizAttemptResponseDto::from)
+                .collect(Collectors.toList());
+    }
+
     public QuizAttemptResponseDto recordAttempt(QuizAttemptRequestDto request) {
         long previousAttempts = quizAttemptRepository.countByUserIdAndQuizId(
                 request.getUserId(), request.getQuizId());

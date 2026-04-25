@@ -13,7 +13,6 @@
         <class>org.eclipse.jakarta.entity.user.LessonProgress</class>
         <class>org.eclipse.jakarta.entity.user.QuizAttempt</class>
         <class>org.eclipse.jakarta.entity.user.QuestionAttempt</class>
-        <class>org.eclipse.jakarta.entity.user.Recommendation</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
 
         <properties>

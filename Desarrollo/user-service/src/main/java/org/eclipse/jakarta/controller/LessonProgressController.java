@@ -9,6 +9,7 @@ import org.eclipse.jakarta.dto.CompleteLessonDto;
 import org.eclipse.jakarta.dto.LessonProgressDto;
 import org.eclipse.jakarta.dto.StartLessonDto;
 import org.eclipse.jakarta.service.LessonProgressService;
+import java.util.List;
 
 @Path("/lesson-progress")
 @RequestScoped
@@ -17,6 +18,13 @@ import org.eclipse.jakarta.service.LessonProgressService;
 public class LessonProgressController {
 
     @EJB private LessonProgressService lessonProgressService;
+
+    @GET
+    @Path("/user/{userId}")
+    public Response findByUserId(@PathParam("userId") Long userId) {
+        List<LessonProgressDto> result = lessonProgressService.findAllByUserId(userId);
+        return Response.ok(result).build();
+    }
 
     @POST
     @Path("/start")

@@ -11,6 +11,8 @@ import org.eclipse.jakarta.entity.user.LessonProgress;
 import org.eclipse.jakarta.entity.user.LessonStatus;
 import org.eclipse.jakarta.exception.ResourceNotFoundException;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Stateless
 public class LessonProgressService {
@@ -38,6 +40,12 @@ public class LessonProgressService {
                 });
 
         return LessonProgressDto.from(lp);
+    }
+
+    public List<LessonProgressDto> findAllByUserId(Long userId) {
+        return lessonProgressRepository.findByUserId(userId).stream()
+                .map(LessonProgressDto::from)
+                .collect(Collectors.toList());
     }
 
     public void completeLesson(Long progressId, CompleteLessonDto request) {

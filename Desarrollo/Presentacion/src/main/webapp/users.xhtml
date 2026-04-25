@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="title">Usuarios</ui:define>
+
+    <ui:define name="content">
+        <div class="page-title">Datos de Usuario</div>
+
+        <!-- Enrollment lookup -->
+        <p:panel header="Consulta de Enrollment" style="margin-bottom:1rem;">
+            <h:form id="enrollForm">
+                <p:panelGrid columns="3" style="width:100%;" columnClasses="col-3,col-4,col-5">
+                    <p:outputLabel for="eid" value="Enrollment ID:"/>
+                    <p:inputNumber id="eid" value="#{userBean.enrollmentId}"
+                                   decimalPlaces="0" minValue="1" style="width:100%;"/>
+                    <p:commandButton value="Buscar" icon="pi pi-search"
+                                     action="#{userBean.lookupEnrollment}"
+                                     update="enrollForm enrollResult" process="enrollForm"/>
+                </p:panelGrid>
+
+                <p:panel id="enrollResult" style="margin-top:1rem;"
+                         rendered="#{userBean.enrollment != null}">
+                    <p:panelGrid columns="4" style="width:100%;"
+                                 columnClasses="col-3,col-3,col-3,col-3">
+                        <p:outputLabel value="Enrollment ID"/>
+                        <p:outputLabel value="Usuario ID"/>
+                        <p:outputLabel value="Curso ID"/>
+                        <p:outputLabel value="Progreso"/>
+
+                        <h:outputText value="#{userBean.enrollment.id}" style="font-weight:600;"/>
+                        <h:outputText value="#{userBean.enrollment.userId}" style="font-weight:600;"/>
+                        <h:outputText value="#{userBean.enrollment.courseId}" style="font-weight:600;"/>
+                        <h:outputText value="#{userBean.enrollment.progress}%" style="font-weight:600;"/>
+                    </p:panelGrid>
+                </p:panel>
+            </h:form>
+        </p:panel>
+
+        <!-- Lesson progress -->
+        <p:panel header="Progreso de Lecciones" style="margin-bottom:1rem;">
+            <h:form id="progressForm">
+                <p:panelGrid columns="3" style="width:100%;" columnClasses="col-3,col-4,col-5">
+                    <p:outputLabel for="puid" value="Usuario ID:"/>
+                    <p:inputNumber id="puid" value="#{userBean.progressUserId}"
+                                   decimalPlaces="0" minValue="1" style="width:100%;"/>
+                    <p:commandButton value="Cargar Progreso" icon="pi pi-list"
+                                     action="#{userBean.loadProgress}"
+                                     update="progressForm progressTable" process="progressForm"/>
+                </p:panelGrid>
+
+                <p:dataTable id="progressTable" value="#{userBean.progressList}" var="p"
+                             style="margin-top:1rem;" stripedRows="true" hover="true"
+                             emptyMessage="Sin datos de progreso."
+                             rendered="#{not empty userBean.progressList}">
+                    <p:column headerText="ID" style="width:70px;">
+                        <h:outputText value="#{p.id}"/>
+                    </p:column>
+                    <p:column headerText="Lección ID" style="width:100px;">
+                        <h:outputText value="#{p.lessonId}"/>
+                    </p:column>
+                    <p:column headerText="Estado">
+                        <h:outputText value="#{p.status}"/>
+                    </p:column>
+                    <p:column headerText="Tiempo (s)" style="width:110px;">
+                        <h:outputText value="#{p.timeSpent}"/>
+                    </p:column>
+                </p:dataTable>
+            </h:form>
+        </p:panel>
+
+        <!-- Quiz attempts -->
+        <p:panel header="Intentos de Quiz">
+            <h:form id="attemptsForm">
+                <p:panelGrid columns="3" style="width:100%;" columnClasses="col-3,col-4,col-5">
+                    <p:outputLabel for="auid" value="Usuario ID:"/>
+                    <p:inputNumber id="auid" value="#{userBean.attemptsUserId}"
+                                   decimalPlaces="0" minValue="1" style="width:100%;"/>
+                    <p:commandButton value="Cargar Intentos" icon="pi pi-chart-bar"
+                                     action="#{userBean.loadQuizAttempts}"
+                                     update="attemptsForm attemptsTable" process="attemptsForm"/>
+                </p:panelGrid>
+
+                <p:dataTable id="attemptsTable" value="#{userBean.quizAttempts}" var="a"
+                             style="margin-top:1rem;" stripedRows="true" hover="true"
+                             emptyMessage="Sin intentos de quiz."
+                             rendered="#{not empty userBean.quizAttempts}">
+                    <p:column headerText="ID" style="width:70px;">
+                        <h:outputText value="#{a.id}"/>
+                    </p:column>
+                    <p:column headerText="Quiz ID" style="width:90px;">
+                        <h:outputText value="#{a.quizId}"/>
+                    </p:column>
+                    <p:column headerText="Puntaje" style="width:100px;">
+                        <h:outputText value="#{a.score}"/>
+                    </p:column>
+                    <p:column headerText="Máximo" style="width:100px;">
+                        <h:outputText value="#{a.maxScore}"/>
+                    </p:column>
+                    <p:column headerText="%" style="width:80px;">
+                        <h:outputText value="#{a.ratio}"/>
+                    </p:column>
+                </p:dataTable>
+            </h:form>
+        </p:panel>
+
+    </ui:define>
+
+</ui:composition>
+</html>

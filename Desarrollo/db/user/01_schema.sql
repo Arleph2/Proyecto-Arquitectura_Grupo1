@@ -48,11 +48,3 @@ CREATE TABLE IF NOT EXISTS question_attempts (
     time_spent         INTEGER
 );
 
-CREATE TABLE IF NOT EXISTS recommendations (
-    id         BIGSERIAL PRIMARY KEY,
-    user_id    BIGINT NOT NULL REFERENCES users(id),
-    lesson_id  BIGINT NOT NULL,
-    score      DOUBLE PRECISION,
-    reason     TEXT,
-    created_at TIMESTAMP
-);

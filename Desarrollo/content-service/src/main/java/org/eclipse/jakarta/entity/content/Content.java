@@ -19,6 +19,10 @@ public class Content {
     @Column(nullable = false)
     private ContentType type;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ContentPurpose purpose = ContentPurpose.LESSON;
+
     @Column(nullable = false)
     private Integer position;
 
@@ -38,6 +42,9 @@ public class Content {
 
     public ContentType getType() { return type; }
     public void setType(ContentType type) { this.type = type; }
+
+    public ContentPurpose getPurpose() { return purpose; }
+    public void setPurpose(ContentPurpose purpose) { this.purpose = purpose; }
 
     public Integer getPosition() { return position; }
     public void setPosition(Integer position) { this.position = position; }

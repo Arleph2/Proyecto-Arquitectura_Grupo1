@@ -40,6 +40,24 @@ services:
       timeout: 5s
       retries: 5
 
+  recommendation_db:
+    image: postgres:16
+    container_name: recommendation_db
+    environment:
+      POSTGRES_DB: recommendation_db
+      POSTGRES_USER: rec_user
+      POSTGRES_PASSWORD: rec_pass
+    ports:
+      - "5434:5432"
+    volumes:
+      - recommendation_db_data:/var/lib/postgresql/data
+      - ./db/recommendation:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rec_user -d recommendation_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # ─── Services ───────────────────────────────────────────────────────────────
 
   content-service:
@@ -92,6 +110,39 @@ services:
       user-service:
         condition: service_healthy
 
+  recommendation-service:
+    build:
+      context: .
+      dockerfile: docker/recommendation-service/Dockerfile
+    container_name: recommendation-service
+    ports:
+      - "8083:8080"
+      - "9993:9990"
+    depends_on:
+      recommendation_db:
+        condition: service_healthy
+      content-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+
+  presentacion:
+    build:
+      context: .
+      dockerfile: docker/presentacion/Dockerfile
+    container_name: presentacion
+    ports:
+      - "8085:8080"
+      - "9995:9990"
+    depends_on:
+      content-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      recommendation-service:
+        condition: service_started
+
 volumes:
   content_db_data:
   user_db_data:
+  recommendation_db_data:

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="title">Inicio</ui:define>
+
+    <ui:define name="content">
+        <div class="page-title">Panel de Control</div>
+
+        <p:panelGrid columns="2" style="width:100%; border:none;" columnClasses="col-6,col-6">
+
+            <p:panel header="📚 Contenido del Curso" style="margin:.5rem;">
+                <p>Explora los módulos, lecciones y contenidos del curso.
+                   Consulta el material de refuerzo asignado a cada lección.</p>
+                <h:link outcome="/content">
+                    <p:button value="Ir a Contenido" icon="pi pi-book"/>
+                </h:link>
+            </p:panel>
+
+            <p:panel header="👤 Datos de Usuario" style="margin:.5rem;">
+                <p>Consulta enrollments, progreso de lecciones y resultados de quizzes
+                   para cualquier usuario del sistema.</p>
+                <h:link outcome="/users">
+                    <p:button value="Ir a Usuarios" icon="pi pi-users"/>
+                </h:link>
+            </p:panel>
+
+            <p:panel header="▶ Simulación" style="margin:.5rem;">
+                <p>Ejecuta una simulación completa de un estudiante cursando todas
+                   las lecciones de un enrollment. El sistema registrará el progreso
+                   y generará intentos de quiz.</p>
+                <h:link outcome="/simulation">
+                    <p:button value="Ir a Simulación" icon="pi pi-play"/>
+                </h:link>
+            </p:panel>
+
+            <p:panel header="⭐ Recomendaciones" style="margin:.5rem;">
+                <p>Visualiza las recomendaciones de refuerzo de un usuario, ejecuta
+                   el análisis completo de un enrollment o analiza una lección
+                   específica.</p>
+                <h:link outcome="/recommendations">
+                    <p:button value="Ir a Recomendaciones" icon="pi pi-star"/>
+                </h:link>
+            </p:panel>
+
+        </p:panelGrid>
+
+        <p:panel header="Servicios disponibles" style="margin-top:1rem;">
+            <p:panelGrid columns="4" style="width:100%; text-align:center;" columnClasses="col-3,col-3,col-3,col-3">
+                <div class="stat-card">
+                    <div class="stat-value">8081</div>
+                    <div class="stat-label">content-service</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">8082</div>
+                    <div class="stat-label">user-service</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">8080</div>
+                    <div class="stat-label">simulation-service</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">8083</div>
+                    <div class="stat-label">recommendation-service</div>
+                </div>
+            </p:panelGrid>
+        </p:panel>
+    </ui:define>
+
+</ui:composition>
+</html>

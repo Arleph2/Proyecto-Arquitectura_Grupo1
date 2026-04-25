@@ -1,4 +1,4 @@
-package org.eclipse.jakarta.entity.user;
+package org.eclipse.jakarta.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -11,11 +11,10 @@ public class Recommendation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    // Plain columns — user and lesson live in separate databases
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
-    // Plain column — lesson lives in content_db
     @Column(name = "lesson_id", nullable = false)
     private Long lessonId;
 
@@ -35,8 +34,8 @@ public class Recommendation {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
 
     public Long getLessonId() { return lessonId; }
     public void setLessonId(Long lessonId) { this.lessonId = lessonId; }

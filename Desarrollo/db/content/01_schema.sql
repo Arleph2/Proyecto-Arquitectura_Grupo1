@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS contents (
     lesson_id  BIGINT NOT NULL REFERENCES lessons(id),
     type       VARCHAR(50) NOT NULL,
     position   INTEGER NOT NULL,
+    purpose    VARCHAR(20) NOT NULL DEFAULT 'LESSON',
     created_at TIMESTAMP
 );
 

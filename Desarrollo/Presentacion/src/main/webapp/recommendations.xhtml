@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="title">Recomendaciones</ui:define>
+
+    <ui:define name="content">
+        <div class="page-title">Análisis y Recomendaciones</div>
+
+        <!-- View recommendations -->
+        <p:panel header="Recomendaciones de un Usuario" style="margin-bottom:1rem;">
+            <h:form id="recoForm">
+                <p:panelGrid columns="3" style="width:100%;" columnClasses="col-3,col-4,col-5">
+                    <p:outputLabel for="ruid" value="Usuario ID:"/>
+                    <p:inputNumber id="ruid" value="#{recommendationBean.recoUserId}"
+                                   decimalPlaces="0" minValue="1" style="width:100%;"/>
+                    <p:commandButton value="Ver Recomendaciones" icon="pi pi-star"
+                                     action="#{recommendationBean.loadRecommendations}"
+                                     update="recoForm recoTable" process="recoForm"/>
+                </p:panelGrid>
+
+                <p:dataTable id="recoTable" value="#{recommendationBean.recommendations}" var="r"
+                             style="margin-top:1rem;" stripedRows="true" hover="true"
+                             emptyMessage="No hay recomendaciones para este usuario."
+                             rendered="#{not empty recommendationBean.recommendations}">
+                    <p:column headerText="ID" style="width:70px;">
+                        <h:outputText value="#{r.id}"/>
+                    </p:column>
+                    <p:column headerText="Lección ID" style="width:100px;">
+                        <h:outputText value="#{r.lessonId}"/>
+                    </p:column>
+                    <p:column headerText="Puntuación" style="width:110px;">
+                        <h:outputText value="#{r.scorePct}"/>
+                    </p:column>
+                    <p:column headerText="Motivo">
+                        <h:outputText value="#{r.reason}"/>
+                    </p:column>
+                </p:dataTable>
+            </h:form>
+        </p:panel>
+
+        <!-- Full course analysis -->
+        <p:panel header="Análisis Completo de Enrollment" style="margin-bottom:1rem;">
+            <h:form id="analysisForm">
+                <p:panelGrid columns="3" style="width:100%;" columnClasses="col-3,col-4,col-5">
+                    <p:outputLabel for="aeid" value="Enrollment ID:"/>
+                    <p:inputNumber id="aeid" value="#{recommendationBean.analysisEnrollmentId}"
+                                   decimalPlaces="0" minValue="1" style="width:100%;"/>
+                    <p:commandButton value="Ejecutar Análisis" icon="pi pi-chart-line"
+                                     action="#{recommendationBean.runFullAnalysis}"
+                                     update="analysisForm analysisSummary weakTable" process="analysisForm"/>
+                </p:panelGrid>
+
+                <p:panel id="analysisSummary" rendered="#{recommendationBean.analysisRan}"
+                         style="margin-top:1rem; background:var(--surface-b);">
+                    <p:panelGrid columns="2" style="width:300px;"
+                                 columnClasses="col-6,col-6">
+                        <h:outputText value="Lecciones débiles:"/>
+                        <h:outputText value="#{recommendationBean.totalWeak}" style="font-weight:700;"/>
+                        <h:outputText value="Recomendaciones generadas:"/>
+                        <h:outputText value="#{recommendationBean.totalRecommendations}" style="font-weight:700;"/>
+                    </p:panelGrid>
+                </p:panel>
+
+                <p:dataTable id="weakTable" value="#{recommendationBean.weakLessons}" var="w"
+                             style="margin-top:1rem;" stripedRows="true" hover="true"
+                             emptyMessage="No se encontraron lecciones débiles."
+                             rendered="#{recommendationBean.analysisRan}">
+                    <p:column headerText="Lección ID" style="width:100px;">
+                        <h:outputText value="#{w.lessonId}"/>
+                    </p:column>
+                    <p:column headerText="Título">
+                        <h:outputText value="#{w.lessonTitle}"/>
+                    </p:column>
+                    <p:column headerText="Completado" style="width:110px;">
+                        <h:outputText value="#{w.completionScore == 1.0 ? 'Sí' : 'No'}"/>
+                    </p:column>
+                    <p:column headerText="Quiz" style="width:90px;">
+                        <h:outputText value="#{w.quizScore * 100}%"/>
+                    </p:column>
+                    <p:column headerText="Global" style="width:90px;">
+                        <h:outputText value="#{w.overallPct}"/>
+                    </p:column>
+                    <p:column headerText="Estado" style="width:90px;">
+                        <span class="badge-weak">Débil</span>
+                    </p:column>
+                    <p:column headerText="Refuerzo recomendado">
+                        <p:dataList value="#{w.recommendedContents}" var="rc" type="none">
+                            <h:outputText value="[ID #{rc.id}] #{rc.type}  "/>
+                        </p:dataList>
+                    </p:column>
+                </p:dataTable>
+            </h:form>
+        </p:panel>
+
+        <!-- Single lesson analysis -->
+        <p:panel header="Análisis de Lección Individual">
+            <h:form id="lessonForm">
+                <p:panelGrid columns="4" style="width:100%;"
+                             columnClasses="col-2,col-3,col-2,col-3">
+                    <p:outputLabel for="leid" value="Enrollment ID:"/>
+                    <p:inputNumber id="leid" value="#{recommendationBean.lessonEnrollmentId}"
+                                   decimalPlaces="0" minValue="1" style="width:100%;"/>
+                    <p:outputLabel for="lid" value="Lección ID:"/>
+                    <p:inputNumber id="lid" value="#{recommendationBean.lessonId}"
+                                   decimalPlaces="0" minValue="1" style="width:100%;"/>
+                </p:panelGrid>
+                <p:commandButton value="Analizar" icon="pi pi-search"
+                                 style="margin-top:.5rem;"
+                                 action="#{recommendationBean.runLessonAnalysis}"
+                                 update="lessonForm lessonResult" process="lessonForm"/>
+
+                <p:panel id="lessonResult" rendered="#{recommendationBean.lessonAnalysisRan}"
+                         style="margin-top:1rem;">
+                    <h:panelGrid columns="2" style="width:400px;">
+                        <h:outputText value="Lección:"/>
+                        <h:outputText value="#{recommendationBean.lessonResult.lessonTitle}" style="font-weight:700;"/>
+
+                        <h:outputText value="Completado:"/>
+                        <h:outputText value="#{recommendationBean.lessonResult.completionScore == 1.0 ? 'Sí' : 'No'}"/>
+
+                        <h:outputText value="Puntaje quiz:"/>
+                        <h:outputText value="#{recommendationBean.lessonResult.quizScore * 100}%"/>
+
+                        <h:outputText value="Puntaje global:"/>
+                        <h:outputText value="#{recommendationBean.lessonResult.overallPct}" style="font-weight:700;"/>
+
+                        <h:outputText value="Estado:"/>
+                        <h:panelGroup>
+                            <span class="#{recommendationBean.lessonResult.weak ? 'badge-weak' : 'badge-ok'}">
+                                <h:outputText value="#{recommendationBean.lessonResult.weakLabel}"/>
+                            </span>
+                        </h:panelGroup>
+                    </h:panelGrid>
+
+                    <p:panel header="Material de Refuerzo Recomendado"
+                             rendered="#{not empty recommendationBean.lessonResult.recommendedContents}"
+                             style="margin-top:.75rem;">
+                        <p:dataTable value="#{recommendationBean.lessonResult.recommendedContents}" var="rc"
+                                     stripedRows="true">
+                            <p:column headerText="Content ID" style="width:110px;">
+                                <h:outputText value="#{rc.id}"/>
+                            </p:column>
+                            <p:column headerText="Tipo">
+                                <h:outputText value="#{rc.type}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+
+                    <p:outputLabel value="Esta lección no tiene material de refuerzo asignado."
+                                   rendered="#{empty recommendationBean.lessonResult.recommendedContents}"
+                                   style="color:var(--text-color-secondary); margin-top:.5rem; display:block;"/>
+                </p:panel>
+            </h:form>
+        </p:panel>
+
+    </ui:define>
+
+</ui:composition>
+</html>

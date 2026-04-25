@@ -58,7 +58,7 @@ INSERT INTO lessons VALUES
 -- =========================
 -- CONTENT (3 PER LESSON)
 -- =========================
-INSERT INTO contents VALUES
+INSERT INTO contents (id, lesson_id, type, position, created_at) VALUES
 (1,1,'VIDEO',1,NOW()),(2,1,'ARTICLE',2,NOW()),(3,1,'QUIZ',3,NOW()),
 (4,2,'VIDEO',1,NOW()),(5,2,'ARTICLE',2,NOW()),(6,2,'QUIZ',3,NOW()),
 (7,3,'VIDEO',1,NOW()),(8,3,'ARTICLE',2,NOW()),(9,3,'QUIZ',3,NOW()),
@@ -126,6 +126,35 @@ INSERT INTO questions VALUES
 INSERT INTO answers VALUES
 (1,1,'Complejidad',true),
 (2,1,'Lenguaje',false);
+
+-- =========================
+-- REINFORCEMENT CONTENT (one VIDEO + one ARTICLE per lesson, for lessons 1-5)
+-- =========================
+INSERT INTO contents (id, lesson_id, type, position, purpose, created_at) VALUES
+(103, 1, 'VIDEO',   1, 'REINFORCEMENT', NOW()),
+(104, 1, 'ARTICLE', 2, 'REINFORCEMENT', NOW()),
+(105, 2, 'VIDEO',   1, 'REINFORCEMENT', NOW()),
+(106, 2, 'ARTICLE', 2, 'REINFORCEMENT', NOW()),
+(107, 3, 'VIDEO',   1, 'REINFORCEMENT', NOW()),
+(108, 3, 'ARTICLE', 2, 'REINFORCEMENT', NOW()),
+(109, 4, 'VIDEO',   1, 'REINFORCEMENT', NOW()),
+(110, 4, 'ARTICLE', 2, 'REINFORCEMENT', NOW()),
+(111, 5, 'VIDEO',   1, 'REINFORCEMENT', NOW()),
+(112, 5, 'ARTICLE', 2, 'REINFORCEMENT', NOW());
+
+INSERT INTO video_contents (id, content_id, url, duration, provider) VALUES
+(6,  103, 'https://reinforce.com/complejidad-intro',    900, 'internal'),
+(7,  105, 'https://reinforce.com/big-o-profundo',       720, 'internal'),
+(8,  107, 'https://reinforce.com/casos-complejidad',    840, 'internal'),
+(9,  109, 'https://reinforce.com/complejidad-espacial', 660, 'internal'),
+(10, 111, 'https://reinforce.com/ejercicios-guiados',   960, 'internal');
+
+INSERT INTO article_contents (id, content_id, body) VALUES
+(1, 104, 'Repaso profundo de complejidad algorítmica. La complejidad mide cuántos recursos (tiempo, memoria) consume un algoritmo en función del tamaño de la entrada. Dominar este concepto es fundamental para analizar y diseñar algoritmos eficientes.'),
+(2, 106, 'Guía de referencia sobre notación Big-O. O(1) es constante, O(log n) logarítmica, O(n) lineal, O(n log n) cuasilineal, O(n²) cuadrática. Identificar la notación correcta requiere analizar los lazos y llamadas recursivas del algoritmo.'),
+(3, 108, 'Análisis de casos en algoritmos. El peor caso define la cota superior de tiempo de ejecución. El mejor caso rara vez es relevante en la práctica. El caso promedio requiere análisis probabilístico sobre las posibles entradas.'),
+(4, 110, 'Complejidad espacial: cómo medir el uso de memoria. Incluye el espacio de la pila de llamadas en algoritmos recursivos. Un algoritmo puede ser O(n) en tiempo pero O(1) en espacio si procesa los datos en flujo.'),
+(5, 112, 'Estrategias para resolver ejercicios de complejidad. Identifica los lazos anidados, reduce el problema a subproblemas conocidos y verifica con ejemplos concretos antes de generalizar la notación.');
 
 -- =========================
 -- RESET SEQUENCES

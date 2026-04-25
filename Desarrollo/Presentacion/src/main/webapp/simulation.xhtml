@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="title">Simulación</ui:define>
+
+    <ui:define name="content">
+        <div class="page-title">Simulación de Estudiante</div>
+
+        <p:panel header="Ejecutar Simulación" style="margin-bottom:1rem;">
+            <h:form id="simForm">
+                <p:panelGrid columns="3" style="width:100%;" columnClasses="col-3,col-4,col-5">
+                    <p:outputLabel for="eid" value="Enrollment ID:"/>
+                    <p:inputNumber id="eid" value="#{simulationBean.enrollmentId}"
+                                   decimalPlaces="0" minValue="1" style="width:100%;"/>
+                    <p:commandButton value="Ejecutar Simulación" icon="pi pi-play"
+                                     action="#{simulationBean.runSimulation}"
+                                     update="simForm simResult" process="simForm"
+                                     onclick="return confirm('Esta operación completará todas las lecciones del enrollment y registrará datos de progreso. ¿Continuar?')"/>
+                </p:panelGrid>
+            </h:form>
+        </p:panel>
+
+        <!-- Results -->
+        <p:panel id="simResult" rendered="#{simulationBean.ran}" header="Resultado de la Simulación">
+
+            <!-- Summary cards -->
+            <p:panelGrid columns="4" style="width:100%; text-align:center; margin-bottom:1rem;"
+                         columnClasses="col-3,col-3,col-3,col-3">
+                <div class="stat-card">
+                    <div class="stat-value">#{simulationBean.resultUserId}</div>
+                    <div class="stat-label">Usuario ID</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">#{simulationBean.totalLessons}</div>
+                    <div class="stat-label">Lecciones completadas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">#{simulationBean.formattedTotalTime}</div>
+                    <div class="stat-label">Tiempo total</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">#{simulationBean.completionPct}%</div>
+                    <div class="stat-label">Porcentaje completado</div>
+                </div>
+            </p:panelGrid>
+
+            <!-- Module breakdown -->
+            <p:outputLabel value="Desglose por módulo"
+                           style="font-weight:600; display:block; margin-bottom:.5rem;"/>
+            <p:dataTable value="#{simulationBean.moduleResults}" var="m"
+                         stripedRows="true" hover="true">
+                <p:column headerText="Módulo">
+                    <h:outputText value="#{m.title}"/>
+                </p:column>
+                <p:column headerText="Lecciones" style="width:110px;">
+                    <h:outputText value="#{m.lessonCount}"/>
+                </p:column>
+                <p:column headerText="Tiempo total" style="width:130px;">
+                    <h:outputText value="#{m.formattedTime}"/>
+                </p:column>
+            </p:dataTable>
+
+        </p:panel>
+
+    </ui:define>
+
+</ui:composition>
+</html>

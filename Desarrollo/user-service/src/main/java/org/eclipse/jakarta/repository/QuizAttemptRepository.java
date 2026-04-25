@@ -22,6 +22,14 @@ public class QuizAttemptRepository {
                 .getSingleResult();
     }
 
+    public List<QuizAttempt> findByUserId(Long userId) {
+        return em.createQuery(
+                "SELECT qa FROM QuizAttempt qa WHERE qa.user.id = :userId",
+                QuizAttempt.class)
+                .setParameter("userId", userId)
+                .getResultList();
+    }
+
     public QuizAttempt save(QuizAttempt attempt) {
         em.persist(attempt);
         return attempt;

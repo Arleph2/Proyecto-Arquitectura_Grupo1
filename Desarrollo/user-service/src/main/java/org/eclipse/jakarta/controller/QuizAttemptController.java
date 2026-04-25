@@ -8,6 +8,7 @@ import jakarta.ws.rs.core.Response;
 import org.eclipse.jakarta.dto.QuizAttemptRequestDto;
 import org.eclipse.jakarta.dto.QuizAttemptResponseDto;
 import org.eclipse.jakarta.service.QuizAttemptService;
+import java.util.List;
 
 @Path("/quiz-attempts")
 @RequestScoped
@@ -16,6 +17,13 @@ import org.eclipse.jakarta.service.QuizAttemptService;
 public class QuizAttemptController {
 
     @EJB private QuizAttemptService quizAttemptService;
+
+    @GET
+    @Path("/user/{userId}")
+    public Response findByUserId(@PathParam("userId") Long userId) {
+        List<QuizAttemptResponseDto> result = quizAttemptService.findAllByUserId(userId);
+        return Response.ok(result).build();
+    }
 
     @POST
     public Response recordAttempt(QuizAttemptRequestDto request) {

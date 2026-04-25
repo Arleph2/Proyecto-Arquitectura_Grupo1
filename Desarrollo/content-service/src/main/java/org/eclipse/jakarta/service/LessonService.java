@@ -17,6 +17,10 @@ public class LessonService {
     @EJB private LessonRepository lessonRepository;
     @EJB private ContentRepository contentRepository;
 
+    public Optional<LessonDto> findById(Long lessonId) {
+        return lessonRepository.findById(lessonId).map(LessonDto::from);
+    }
+
     public List<LessonDto> findLessonsOrdered(Long moduleId) {
         List<Lesson> lessons = lessonRepository.findByModuleIdOrdered(moduleId);
         return lessons.stream().map(LessonDto::from).collect(Collectors.toList());
@@ -25,6 +29,11 @@ public class LessonService {
     public List<ContentDto> findContentsOrdered(Long lessonId) {
         List<Content> contents = contentRepository.findByLessonIdOrdered(lessonId);
         return contents.stream().map(ContentDto::from).collect(Collectors.toList());
+    }
+
+    public List<ContentDto> findReinforcementContents(Long lessonId) {
+        return contentRepository.findReinforcementByLessonId(lessonId).stream()
+                .map(ContentDto::from).collect(Collectors.toList());
     }
 
     public Optional<VideoContentDto> findVideo(Long contentId) {

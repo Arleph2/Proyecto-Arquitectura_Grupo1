@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Plataforma Adaptativa — <ui:insert name="title">Panel</ui:insert></title>
+    <style>
+        body { margin: 0; font-family: var(--font-family); background: var(--surface-ground); }
+        .layout-topbar {
+            background: var(--primary-color);
+            color: #fff;
+            padding: 0 1.5rem;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,.15);
+        }
+        .layout-topbar .brand {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+        }
+        .layout-topbar nav a {
+            color: rgba(255,255,255,.85);
+            text-decoration: none;
+            margin-left: 1.25rem;
+            font-size: .95rem;
+            padding: .25rem .5rem;
+            border-radius: 4px;
+            transition: background .2s;
+        }
+        .layout-topbar nav a:hover { background: rgba(255,255,255,.15); color: #fff; }
+        .layout-content { padding: 1.5rem 2rem; max-width: 1200px; margin: 0 auto; }
+        .page-title { font-size: 1.6rem; font-weight: 600; margin-bottom: 1.25rem;
+                      color: var(--text-color); }
+        .stat-card { text-align: center; }
+        .stat-card .stat-value { font-size: 2rem; font-weight: 700; color: var(--primary-color); }
+        .stat-card .stat-label { color: var(--text-color-secondary); font-size: .85rem; }
+        .badge-weak  { background: #fca5a5; color: #7f1d1d; padding: 2px 8px;
+                       border-radius: 12px; font-size: .8rem; font-weight: 600; }
+        .badge-ok    { background: #bbf7d0; color: #14532d; padding: 2px 8px;
+                       border-radius: 12px; font-size: .8rem; font-weight: 600; }
+    </style>
+</h:head>
+
+<h:body>
+    <div class="layout-topbar">
+        <h:link outcome="/index" styleClass="brand">🎓 Plataforma Adaptativa</h:link>
+        <nav>
+            <h:link outcome="/content"         value="Contenido"/>
+            <h:link outcome="/users"           value="Usuarios"/>
+            <h:link outcome="/simulation"      value="Simulación"/>
+            <h:link outcome="/recommendations" value="Recomendaciones"/>
+        </nav>
+    </div>
+
+    <div class="layout-content">
+        <p:messages showDetail="true" closable="true"/>
+        <ui:insert name="content"/>
+    </div>
+</h:body>
+</html>

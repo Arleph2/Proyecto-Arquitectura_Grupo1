@@ -15,6 +15,8 @@
         <module>content-service</module>
         <module>user-service</module>
         <module>simulation-service</module>
+        <module>recommendation-service</module>
+        <module>Presentacion</module>
     </modules>
 
     <properties>

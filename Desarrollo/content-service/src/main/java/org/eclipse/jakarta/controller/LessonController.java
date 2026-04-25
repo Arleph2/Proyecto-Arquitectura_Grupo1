@@ -18,6 +18,14 @@ public class LessonController {
     @EJB private LessonService lessonService;
 
     @GET
+    @Path("/lessons/{lessonId}")
+    public Response getLesson(@PathParam("lessonId") Long lessonId) {
+        return lessonService.findById(lessonId)
+                .map(dto -> Response.ok(dto).build())
+                .orElse(Response.status(Response.Status.NOT_FOUND).build());
+    }
+
+    @GET
     @Path("/modules/{moduleId}/lessons")
     public Response getLessons(@PathParam("moduleId") Long moduleId) {
         List<LessonDto> lessons = lessonService.findLessonsOrdered(moduleId);
@@ -28,6 +36,13 @@ public class LessonController {
     @Path("/lessons/{lessonId}/contents")
     public Response getContents(@PathParam("lessonId") Long lessonId) {
         List<ContentDto> contents = lessonService.findContentsOrdered(lessonId);
+        return Response.ok(contents).build();
+    }
+
+    @GET
+    @Path("/lessons/{lessonId}/reinforcement")
+    public Response getReinforcementContents(@PathParam("lessonId") Long lessonId) {
+        List<ContentDto> contents = lessonService.findReinforcementContents(lessonId);
         return Response.ok(contents).build();
     }
 
