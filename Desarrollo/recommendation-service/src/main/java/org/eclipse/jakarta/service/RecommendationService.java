@@ -124,6 +124,9 @@ public class RecommendationService {
                 ? completionScore
                 : (completionScore + quizScore) / 2.0;
 
+        // Only flag as weak if the lesson was completed AND the quiz score is below threshold
+        boolean weak = completionScore >= 1.0 && !quizContents.isEmpty() && quizScore < WEAKNESS_THRESHOLD;
+
         List<ContentSummaryDto> recommended = contentClient.getReinforcementContents(lesson.getId())
                 .stream()
                 .map(c -> new ContentSummaryDto(c.getId(), c.getType()))
@@ -131,7 +134,7 @@ public class RecommendationService {
 
         return new LessonAnalysisDto(lesson.getId(), lesson.getTitle(),
                 completionScore, quizScore, overallScore,
-                overallScore < WEAKNESS_THRESHOLD, recommended);
+                weak, recommended);
     }
 
     private double bestQuizRatio(ContentDto quizContent,

@@ -93,6 +93,7 @@ public class CoursePageBean implements Serializable {
                 .count();
         int total = quiz.getQuestions().size();
         double pct = total == 0 ? 0 : correct * 100.0 / total;
+
         FacesContext.getCurrentInstance().addMessage("quizMsg",
                 new FacesMessage(FacesMessage.SEVERITY_INFO,
                         String.format("%.0f%% — %d de %d correctas", pct, correct, total), null));
@@ -109,6 +110,9 @@ public class CoursePageBean implements Serializable {
         }
         if (progressId > 0) {
             client.completeLesson(progressId);
+            // Run analysis after marking complete: now completionScore=1.0 so
+            // a low quiz score will create a recommendation and show the reinforcement tab
+            client.runLessonAnalysis(course.getEnrollmentId(), lessonId);
             course.refreshProgress();
         }
         return "/course?lessonId=" + lessonId + "&faces-redirect=true";
