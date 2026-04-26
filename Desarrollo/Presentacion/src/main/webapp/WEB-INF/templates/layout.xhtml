@@ -7,62 +7,155 @@
 <h:head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Plataforma Adaptativa — <ui:insert name="title">Panel</ui:insert></title>
+    <title><ui:insert name="title">Plataforma</ui:insert> — Plataforma Adaptativa</title>
     <style>
-        body { margin: 0; font-family: var(--font-family); background: var(--surface-ground); }
-        .layout-topbar {
-            background: var(--primary-color);
-            color: #fff;
-            padding: 0 1.5rem;
-            height: 56px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 2px 8px rgba(0,0,0,.15);
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif;
+               background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+
+        /* ── topbar ── */
+        .topbar {
+            position: sticky; top: 0; z-index: 100;
+            background: #1e293b; border-bottom: 1px solid #334155;
+            height: 56px; display: flex; align-items: center;
+            justify-content: space-between; padding: 0 1.5rem;
         }
-        .layout-topbar .brand {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: #fff;
-            text-decoration: none;
+        .topbar .brand { font-size: 1.1rem; font-weight: 700; color: #f8fafc;
+                         text-decoration: none; display: flex; align-items: center; gap: .5rem; }
+        .topbar nav a  { color: #94a3b8; text-decoration: none; margin-left: 1.25rem;
+                         font-size: .9rem; padding: .3rem .6rem; border-radius: 4px;
+                         transition: color .15s, background .15s; }
+        .topbar nav a:hover { color: #f8fafc; background: #334155; }
+
+        /* ── page shell ── */
+        .page-shell { display: flex; min-height: calc(100vh - 56px); }
+
+        /* ── sidebar ── */
+        .sidebar {
+            width: 280px; min-width: 280px;
+            background: #1e293b; border-right: 1px solid #334155;
+            overflow-y: auto; padding-bottom: 2rem;
         }
-        .layout-topbar nav a {
-            color: rgba(255,255,255,.85);
-            text-decoration: none;
-            margin-left: 1.25rem;
-            font-size: .95rem;
-            padding: .25rem .5rem;
-            border-radius: 4px;
-            transition: background .2s;
+        .sidebar-header { padding: 1.25rem 1rem .5rem;
+                          font-size: .7rem; font-weight: 700; letter-spacing: .08em;
+                          color: #64748b; text-transform: uppercase; }
+        .module-title {
+            padding: .55rem 1rem; font-size: .78rem; font-weight: 700;
+            color: #64748b; background: #0f172a; letter-spacing: .04em;
+            text-transform: uppercase;
         }
-        .layout-topbar nav a:hover { background: rgba(255,255,255,.15); color: #fff; }
-        .layout-content { padding: 1.5rem 2rem; max-width: 1200px; margin: 0 auto; }
-        .page-title { font-size: 1.6rem; font-weight: 600; margin-bottom: 1.25rem;
-                      color: var(--text-color); }
-        .stat-card { text-align: center; }
-        .stat-card .stat-value { font-size: 2rem; font-weight: 700; color: var(--primary-color); }
-        .stat-card .stat-label { color: var(--text-color-secondary); font-size: .85rem; }
-        .badge-weak  { background: #fca5a5; color: #7f1d1d; padding: 2px 8px;
-                       border-radius: 12px; font-size: .8rem; font-weight: 600; }
-        .badge-ok    { background: #bbf7d0; color: #14532d; padding: 2px 8px;
-                       border-radius: 12px; font-size: .8rem; font-weight: 600; }
+        .lesson-row {
+            display: flex !important; align-items: center; gap: .6rem;
+            padding: .6rem 1rem .6rem 1.25rem;
+            font-size: .85rem; color: #94a3b8; text-decoration: none;
+            border-bottom: 1px solid #1e293b;
+            transition: background .12s, color .12s;
+        }
+        .lesson-row:hover  { background: #334155; color: #f8fafc; }
+        .lesson-row.active { background: #4c1d95; color: #f8fafc; font-weight: 600; }
+        .lesson-row .check { color: #22c55e; font-size: .9rem; flex-shrink: 0; }
+        .lesson-row .circle{ width: 12px; height: 12px; border-radius: 50%;
+                             border: 2px solid #475569; flex-shrink: 0; display: inline-block; }
+
+        /* ── progress bar ── */
+        .progress-wrap { padding: .75rem 1rem; }
+        .progress-label { font-size: .75rem; color: #64748b; margin-bottom: .3rem; }
+        .progress-bar-bg { background: #1e3a5f; border-radius: 4px; height: 5px; }
+        .progress-bar-fill { background: #7c3aed; border-radius: 4px; height: 5px; transition: width .4s; }
+
+        /* ── content area ── */
+        .content-area { flex: 1; padding: 2rem; overflow-y: auto; max-width: 860px; }
+
+        /* ── player ── */
+        .lesson-title { font-size: 1.4rem; font-weight: 700; color: #f8fafc; margin-bottom: .25rem; }
+        .lesson-meta  { font-size: .85rem; color: #64748b; margin-bottom: 1.25rem; }
+
+        .video-wrap {
+            width: 100%; background: #000; border-radius: 8px; overflow: hidden;
+            margin-bottom: 1.5rem; aspect-ratio: 16/9;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .video-wrap iframe { width: 100%; height: 100%; border: none; }
+        .video-placeholder { color: #64748b; text-align: center; padding: 3rem; }
+
+        .article-body { background: #1e293b; border-radius: 8px; padding: 1.5rem;
+                        line-height: 1.8; color: #cbd5e1; margin-bottom: 1.5rem; }
+
+        /* ── quiz ── */
+        .quiz-card { background: #1e293b; border-radius: 8px; padding: 1.25rem; margin-bottom: .75rem; }
+        .quiz-question { font-weight: 600; color: #f1f5f9; margin-bottom: .75rem; font-size: .95rem; }
+        .answer-option {
+            display: flex; align-items: center; gap: .75rem;
+            padding: .6rem .9rem; margin-bottom: .35rem;
+            background: #0f172a; border-radius: 6px; cursor: pointer;
+            border: 2px solid transparent; transition: border .12s, background .12s;
+        }
+        .answer-option:hover { border-color: #7c3aed; }
+
+        /* h:selectOneRadio styled like answer-option */
+        .quiz-radio { width: 100%; border-collapse: collapse; }
+        .quiz-radio td { padding: 0; }
+        .quiz-radio td label {
+            display: flex; align-items: center; gap: .75rem;
+            padding: .6rem .9rem; margin-bottom: .35rem;
+            background: #0f172a; border-radius: 6px; cursor: pointer;
+            border: 2px solid transparent; transition: border .12s;
+            color: #e2e8f0; font-size: .9rem; width: 100%; box-sizing: border-box;
+        }
+        .quiz-radio td label:hover { border-color: #7c3aed; }
+        .quiz-radio td input[type="radio"] { accent-color: #7c3aed; flex-shrink: 0; }
+
+        /* ── tabs ── */
+        .tab-bar { display: flex; gap: 0; margin-bottom: 1.25rem; border-bottom: 2px solid #334155; }
+        .tab-btn {
+            padding: .55rem 1.25rem; font-size: .88rem; font-weight: 600;
+            cursor: pointer; background: transparent; border: none; color: #64748b;
+            border-bottom: 3px solid transparent; margin-bottom: -2px;
+            transition: color .15s;
+        }
+        .tab-btn.active { color: #a78bfa; border-bottom-color: #7c3aed; }
+        .tab-btn:hover  { color: #f8fafc; }
+
+        /* ── nav buttons ── */
+        .lesson-nav { display: flex; justify-content: space-between; margin-top: 2rem;
+                      padding-top: 1.25rem; border-top: 1px solid #334155; }
+        .nav-btn { display: inline-block; padding: .6rem 1.25rem; border-radius: 6px;
+                   font-size: .88rem; font-weight: 600; text-decoration: none;
+                   transition: opacity .15s; }
+        .nav-btn:hover { opacity: .85; }
+        .nav-btn-primary { background: #7c3aed; color: #fff; }
+        .nav-btn-ghost   { background: transparent; color: #94a3b8;
+                           border: 1px solid #334155; }
+
+        /* ── dashboard ── */
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; }
+        .stat-card { background: #1e293b; border-radius: 8px; padding: 1.25rem; text-align: center; }
+        .stat-val  { font-size: 2rem; font-weight: 700; color: #a78bfa; }
+        .stat-lbl  { font-size: .78rem; color: #64748b; margin-top: .25rem; }
+
+        .rec-card { background: #1e293b; border-radius: 8px; padding: 1rem;
+                    margin-bottom: .75rem; border-left: 4px solid #7c3aed; }
+        .rec-reason { font-size: .82rem; color: #64748b; margin-top: .25rem; }
     </style>
 </h:head>
 
 <h:body>
-    <div class="layout-topbar">
-        <h:link outcome="/index" styleClass="brand">🎓 Plataforma Adaptativa</h:link>
+    <div class="topbar">
+        <h:link outcome="/index" styleClass="brand">&#127891; Plataforma Adaptativa</h:link>
         <nav>
-            <h:link outcome="/content"         value="Contenido"/>
-            <h:link outcome="/users"           value="Usuarios"/>
-            <h:link outcome="/simulation"      value="Simulación"/>
-            <h:link outcome="/recommendations" value="Recomendaciones"/>
+            <h:link outcome="/index"  value="Mi progreso"/>
+            <h:link outcome="/course" value="Ir al curso"/>
+            <h:link outcome="/admin"  value="Admin"/>
         </nav>
     </div>
 
-    <div class="layout-content">
-        <p:messages showDetail="true" closable="true"/>
-        <ui:insert name="content"/>
-    </div>
+    <ui:insert name="body">
+        <div class="page-shell">
+            <div class="content-area">
+                <p:messages showDetail="true" closable="true"/>
+                <ui:insert name="content"/>
+            </div>
+        </div>
+    </ui:insert>
 </h:body>
 </html>

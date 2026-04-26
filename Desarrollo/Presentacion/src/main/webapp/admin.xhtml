@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+<ui:define name="title">Administración</ui:define>
+
+<ui:define name="content">
+
+    <div style="font-size:1.4rem;font-weight:700;color:#f8fafc;margin-bottom:1.5rem;">
+        Administración del sistema
+    </div>
+
+    <h:form id="adminForm">
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+
+        <!-- Simulation -->
+        <div style="background:#1e293b;border-radius:8px;padding:1.5rem;">
+            <div style="font-size:1rem;font-weight:700;color:#f1f5f9;margin-bottom:.75rem;">
+                Simulación de estudiante
+            </div>
+            <p style="color:#64748b;font-size:.88rem;margin-bottom:1rem;">
+                Simula un estudiante completando todas las lecciones del enrollment activo.
+                Genera progreso y quizzes automáticamente.
+            </p>
+            <p:commandButton value="Ejecutar simulación" icon="pi pi-play"
+                             style="background:#7c3aed;border-color:#7c3aed;"
+                             onclick="return confirm('¿Ejecutar simulación para enrollment #{courseBean.enrollmentId}?');"
+                             action="#{dashboardBean.runSimulation}"
+                             update="@form simResult"
+                             process="@none"/>
+            <h:panelGroup id="simResult" layout="block">
+                <h:panelGroup rendered="#{dashboardBean.simulationResult != null}" layout="block">
+                    <div style="margin-top:1rem;padding:.75rem;background:#0f172a;border-radius:6px;
+                                font-size:.8rem;color:#94a3b8;word-break:break-all;max-height:200px;overflow-y:auto;">
+                        #{dashboardBean.simulationResult}
+                    </div>
+                </h:panelGroup>
+            </h:panelGroup>
+        </div>
+
+        <!-- Analysis -->
+        <div style="background:#1e293b;border-radius:8px;padding:1.5rem;">
+            <div style="font-size:1rem;font-weight:700;color:#f1f5f9;margin-bottom:.75rem;">
+                Análisis de recomendaciones
+            </div>
+            <p style="color:#64748b;font-size:.88rem;margin-bottom:1rem;">
+                Ejecuta el motor de análisis para el enrollment activo. Genera recomendaciones
+                de refuerzo para las lecciones donde el estudiante mostró debilidad.
+            </p>
+            <p:commandButton value="Ejecutar análisis" icon="pi pi-chart-bar"
+                             style="background:#0e7490;border-color:#0e7490;"
+                             action="#{dashboardBean.runAnalysis}"
+                             update="@form"
+                             process="@none"/>
+        </div>
+
+    </div>
+
+    <p:messages showDetail="true" closable="true" style="margin-top:1rem;"/>
+
+    <!-- Enrollment info -->
+    <div style="background:#1e293b;border-radius:8px;padding:1.5rem;margin-top:1.5rem;">
+        <div style="font-size:1rem;font-weight:700;color:#f1f5f9;margin-bottom:1rem;">
+            Estado del enrollment actual
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;">
+            <div class="stat-card">
+                <div class="stat-val" style="font-size:1.5rem;">#{courseBean.enrollmentId}</div>
+                <div class="stat-lbl">Enrollment ID</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val" style="font-size:1.5rem;">#{courseBean.userId}</div>
+                <div class="stat-lbl">User ID</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val" style="font-size:1.5rem;">#{courseBean.courseId}</div>
+                <div class="stat-lbl">Course ID</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val" style="font-size:1.5rem;">#{courseBean.progressPct}%</div>
+                <div class="stat-lbl">Progreso</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quiz attempts summary -->
+    <h:panelGroup rendered="#{not empty dashboardBean.attempts}" layout="block">
+        <div style="background:#1e293b;border-radius:8px;padding:1.5rem;margin-top:1.5rem;">
+            <div style="font-size:1rem;font-weight:700;color:#f1f5f9;margin-bottom:1rem;">
+                Intentos de quiz (#{dashboardBean.attempts.size()} total)
+            </div>
+            <p:dataTable value="#{dashboardBean.attempts}" var="a"
+                         style="background:transparent;"
+                         rowStyleClass="#{a.ratio >= 0.7 ? 'row-ok' : 'row-weak'}">
+                <p:column headerText="Quiz ID"     style="color:#cbd5e1;">#{a.quizId}</p:column>
+                <p:column headerText="Puntaje"     style="color:#cbd5e1;">#{a.score} / #{a.maxScore}</p:column>
+                <p:column headerText="Porcentaje"  style="color:#cbd5e1;">#{a.ratioLabel}</p:column>
+                <p:column headerText="Estado">
+                    <h:panelGroup rendered="#{a.ratio >= 0.7}">
+                        <span style="color:#22c55e;font-weight:600;">Aprobado</span>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{a.ratio lt 0.7}">
+                        <span style="color:#ef4444;font-weight:600;">Requiere refuerzo</span>
+                    </h:panelGroup>
+                </p:column>
+            </p:dataTable>
+        </div>
+    </h:panelGroup>
+
+    </h:form>
+
+</ui:define>
+</ui:composition>
+</html>

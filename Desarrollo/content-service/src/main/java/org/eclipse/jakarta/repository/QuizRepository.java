@@ -16,11 +16,16 @@ public class QuizRepository {
 
     public Optional<Quiz> findByContentIdWithQuestions(Long contentId) {
         List<Quiz> results = em.createQuery(
-                "SELECT DISTINCT q FROM Quiz q LEFT JOIN FETCH q.questions WHERE q.content.id = :contentId",
+                "SELECT DISTINCT q FROM Quiz q " +
+                "LEFT JOIN FETCH q.questions " +
+                "WHERE q.content.id = :contentId",
                 Quiz.class)
                 .setParameter("contentId", contentId)
                 .getResultList();
-        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+        if (results.isEmpty()) return Optional.empty();
+        Quiz quiz = results.get(0);
+        quiz.getQuestions().forEach(q -> q.getAnswers().size());
+        return Optional.of(quiz);
     }
 
     public Optional<Answer> findCorrectAnswerByQuestionId(Long questionId) {

@@ -1,75 +1,122 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
       xmlns:ui="jakarta.faces.facelets"
       xmlns:p="http://primefaces.org/ui">
 
 <ui:composition template="/WEB-INF/templates/layout.xhtml">
+<ui:define name="title">Inicio</ui:define>
 
-    <ui:define name="title">Inicio</ui:define>
+<ui:define name="content">
 
-    <ui:define name="content">
-        <div class="page-title">Panel de Control</div>
-
-        <p:panelGrid columns="2" style="width:100%; border:none;" columnClasses="col-6,col-6">
-
-            <p:panel header="📚 Contenido del Curso" style="margin:.5rem;">
-                <p>Explora los módulos, lecciones y contenidos del curso.
-                   Consulta el material de refuerzo asignado a cada lección.</p>
-                <h:link outcome="/content">
-                    <p:button value="Ir a Contenido" icon="pi pi-book"/>
-                </h:link>
-            </p:panel>
-
-            <p:panel header="👤 Datos de Usuario" style="margin:.5rem;">
-                <p>Consulta enrollments, progreso de lecciones y resultados de quizzes
-                   para cualquier usuario del sistema.</p>
-                <h:link outcome="/users">
-                    <p:button value="Ir a Usuarios" icon="pi pi-users"/>
-                </h:link>
-            </p:panel>
-
-            <p:panel header="▶ Simulación" style="margin:.5rem;">
-                <p>Ejecuta una simulación completa de un estudiante cursando todas
-                   las lecciones de un enrollment. El sistema registrará el progreso
-                   y generará intentos de quiz.</p>
-                <h:link outcome="/simulation">
-                    <p:button value="Ir a Simulación" icon="pi pi-play"/>
-                </h:link>
-            </p:panel>
-
-            <p:panel header="⭐ Recomendaciones" style="margin:.5rem;">
-                <p>Visualiza las recomendaciones de refuerzo de un usuario, ejecuta
-                   el análisis completo de un enrollment o analiza una lección
-                   específica.</p>
-                <h:link outcome="/recommendations">
-                    <p:button value="Ir a Recomendaciones" icon="pi pi-star"/>
-                </h:link>
-            </p:panel>
-
-        </p:panelGrid>
-
-        <p:panel header="Servicios disponibles" style="margin-top:1rem;">
-            <p:panelGrid columns="4" style="width:100%; text-align:center;" columnClasses="col-3,col-3,col-3,col-3">
-                <div class="stat-card">
-                    <div class="stat-value">8081</div>
-                    <div class="stat-label">content-service</div>
+    <!-- Hero: course card -->
+    <div style="background:#1e293b;border-radius:12px;padding:2rem;margin-bottom:1.5rem;
+                display:flex;align-items:center;justify-content:space-between;gap:1.5rem;flex-wrap:wrap;">
+        <div>
+            <div style="font-size:1.4rem;font-weight:700;color:#f8fafc;margin-bottom:.5rem;">
+                Plataforma Adaptativa de Aprendizaje
+            </div>
+            <div style="color:#94a3b8;font-size:.9rem;margin-bottom:1.25rem;">
+                #{courseBean.completedCount} de #{courseBean.totalLessons} lecciones completadas
+            </div>
+            <!-- progress bar -->
+            <div style="width:320px;max-width:100%;">
+                <div style="background:#334155;border-radius:4px;height:8px;">
+                    <div style="background:#7c3aed;border-radius:4px;height:8px;width:#{courseBean.progressPct}%;transition:width .5s;"/>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-value">8082</div>
-                    <div class="stat-label">user-service</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">8080</div>
-                    <div class="stat-label">simulation-service</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">8083</div>
-                    <div class="stat-label">recommendation-service</div>
-                </div>
-            </p:panelGrid>
-        </p:panel>
-    </ui:define>
+                <div style="color:#64748b;font-size:.78rem;margin-top:.4rem;">#{courseBean.progressPct}% completado</div>
+            </div>
+        </div>
+        <h:link outcome="/course" styleClass="nav-btn nav-btn-primary" style="font-size:1rem;padding:.85rem 2rem;">
+            <f:param name="lessonId" value="#{courseBean.firstLessonId}"/>
+            &#9654; Continuar aprendiendo
+        </h:link>
+    </div>
 
+    <!-- Stats row -->
+    <div class="stat-grid" style="margin-bottom:1.5rem;">
+        <div class="stat-card">
+            <div class="stat-val">#{courseBean.completedCount}</div>
+            <div class="stat-lbl">Lecciones completadas</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val">#{courseBean.progressPct}%</div>
+            <div class="stat-lbl">Progreso</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val">#{courseBean.totalLessons - courseBean.completedCount}</div>
+            <div class="stat-lbl">Lecciones restantes</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val">#{dashboardBean.attempts.size()}</div>
+            <div class="stat-lbl">Quizzes realizados</div>
+        </div>
+    </div>
+
+    <!-- Two columns: recommendations + quiz results -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+
+        <div>
+            <div style="font-size:.95rem;font-weight:700;color:#f1f5f9;margin-bottom:.75rem;
+                        text-transform:uppercase;letter-spacing:.05em;font-size:.78rem;color:#64748b;">
+                Lecciones recomendadas para refuerzo
+            </div>
+            <h:panelGroup rendered="#{empty dashboardBean.recommendations}">
+                <div style="color:#475569;font-size:.88rem;padding:1rem;background:#1e293b;
+                            border-radius:8px;">
+                    Sin recomendaciones aún. Completa algunas lecciones y quizzes para
+                    recibir sugerencias personalizadas.
+                </div>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{not empty dashboardBean.recommendations}">
+                <ui:repeat value="#{dashboardBean.recommendations}" var="r">
+                    <h:link outcome="/course" styleClass="rec-card rec-card-link">
+                        <f:param name="lessonId" value="#{r.lessonId}"/>
+                        <div style="font-weight:600;color:#f1f5f9;font-size:.9rem;">
+                            &#9654; Lección #{r.lessonId} — Refuerzo
+                        </div>
+                        <div class="rec-reason">#{r.reason}</div>
+                        <div style="font-size:.78rem;color:#a78bfa;margin-top:.35rem;">
+                            Puntuación: #{r.scorePct} · Haz clic para ver el material de refuerzo
+                        </div>
+                    </h:link>
+                </ui:repeat>
+            </h:panelGroup>
+        </div>
+
+        <div>
+            <div style="font-size:.78rem;font-weight:700;color:#64748b;text-transform:uppercase;
+                        letter-spacing:.05em;margin-bottom:.75rem;">
+                Mis resultados de quiz
+            </div>
+            <h:panelGroup rendered="#{empty dashboardBean.attempts}">
+                <div style="color:#475569;font-size:.88rem;padding:1rem;background:#1e293b;border-radius:8px;">
+                    Aún no has respondido ningún quiz.
+                </div>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{not empty dashboardBean.attempts}">
+                <ui:repeat value="#{dashboardBean.attempts}" var="a">
+                    <div class="rec-card"
+                         style="border-left-color:#{a.ratio ge 0.7 ? '#22c55e' : '#ef4444'};">
+                        <div style="font-weight:600;color:#f1f5f9;font-size:.9rem;">
+                            Quiz ##{a.quizId}
+                        </div>
+                        <div class="rec-reason">
+                            #{a.score} / #{a.maxScore} puntos — #{a.ratioLabel}
+                        </div>
+                        <h:panelGroup rendered="#{a.ratio lt 0.7}">
+                            <div style="font-size:.78rem;color:#fca5a5;margin-top:.2rem;">
+                                Revisa el material de refuerzo de esta lección
+                            </div>
+                        </h:panelGroup>
+                    </div>
+                </ui:repeat>
+            </h:panelGroup>
+        </div>
+
+    </div>
+
+</ui:define>
 </ui:composition>
 </html>

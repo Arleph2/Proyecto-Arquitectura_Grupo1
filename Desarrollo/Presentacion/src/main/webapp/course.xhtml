@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+<f:metadata>
+    <f:viewParam name="lessonId" value="#{courseBean.selectedLessonId}"/>
+    <f:event type="preRenderView" listener="#{coursePageBean.onPreRender}"/>
+</f:metadata>
+
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+<ui:define name="title">Curso</ui:define>
+
+<ui:define name="body">
+<div class="page-shell">
+
+    <!-- ══ SIDEBAR ══════════════════════════════════════════════════════ -->
+    <h:panelGroup id="sidebarPanel" layout="block" styleClass="sidebar">
+        <div class="sidebar-header">Contenido del curso</div>
+
+        <div class="progress-wrap">
+            <div class="progress-label">#{courseBean.completedCount} / #{courseBean.totalLessons} lecciones</div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" style="width:#{courseBean.progressPct}%;"/>
+            </div>
+        </div>
+
+        <ui:repeat value="#{courseBean.modules}" var="mdl">
+            <div class="module-title">#{mdl.title}</div>
+            <ui:repeat value="#{courseBean.getLessons(mdl.id)}" var="les">
+                <h:link outcome="/course"
+                        styleClass="lesson-row #{courseBean.selectedLessonId == les.id ? 'active' : ''}">
+                    <f:param name="lessonId" value="#{les.id}"/>
+                    <h:panelGroup rendered="#{courseBean.isCompleted(les.id)}">
+                        <span class="check">&#10003;</span>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{!courseBean.isCompleted(les.id)}">
+                        <span class="circle"/>
+                    </h:panelGroup>
+                    #{les.title}
+                </h:link>
+            </ui:repeat>
+        </ui:repeat>
+    </h:panelGroup>
+
+    <!-- ══ CONTENT AREA ═════════════════════════════════════════════════ -->
+    <div class="content-area">
+
+        <h:panelGroup rendered="#{courseBean.selectedLessonId le 0}" layout="block">
+            <div style="color:#64748b;padding:3rem;text-align:center;font-size:1.1rem;">
+                Selecciona una lección para comenzar.
+            </div>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{courseBean.selectedLessonId gt 0}" layout="block">
+
+            <div class="lesson-title">Lección #{courseBean.selectedLessonId}</div>
+
+            <!-- top-level tab bar: Lección | Material de refuerzo -->
+            <h:panelGroup rendered="#{coursePageBean.hasReinforcement}" layout="block">
+                <div class="tab-bar">
+                    <button type="button" class="tab-btn ltab active" onclick="showTab('lesson', this)">
+                        Lección
+                    </button>
+                    <button type="button" class="tab-btn ltab" onclick="showTab('reinforcement', this)">
+                        Material de refuerzo
+                    </button>
+                </div>
+            </h:panelGroup>
+
+            <!-- ── LESSON CONTENT ─────────────────────────────────────────── -->
+            <div id="tab-lesson">
+
+                <!-- content-type sub-tab bar (only if at least one type exists) -->
+                <h:panelGroup rendered="#{coursePageBean.hasVideo() or coursePageBean.hasArticle() or coursePageBean.hasQuiz()}"
+                              layout="block">
+                    <div class="tab-bar" style="margin-top:.5rem;">
+                        <ui:fragment rendered="#{coursePageBean.hasVideo()}">
+                            <button type="button" class="tab-btn ctab" onclick="showCtab('video',this)">
+                                &#9654;&#160;Video
+                            </button>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{coursePageBean.hasArticle()}">
+                            <button type="button" class="tab-btn ctab" onclick="showCtab('article',this)">
+                                &#128196;&#160;Artículo
+                            </button>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{coursePageBean.hasQuiz()}">
+                            <button type="button" class="tab-btn ctab" onclick="showCtab('quiz',this)">
+                                &#10067;&#160;Quiz
+                            </button>
+                        </ui:fragment>
+                    </div>
+                </h:panelGroup>
+
+                <!-- VIDEO PANEL -->
+                <h:panelGroup rendered="#{coursePageBean.hasVideo()}" layout="block">
+                    <div id="content-video" style="display:none;">
+                        <div class="video-wrap">
+                            <h:panelGroup rendered="#{coursePageBean.video.provider == 'youtube'}" layout="block">
+                                <iframe src="https://www.youtube.com/embed/#{coursePageBean.video.url}"
+                                        allowfullscreen="true"/>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{coursePageBean.video.provider != 'youtube'}" layout="block">
+                                <div class="video-placeholder">
+                                    <div style="font-size:4rem;">&#9654;</div>
+                                    <div style="margin-top:.5rem;font-size:.95rem;">#{coursePageBean.video.url}</div>
+                                    <div style="color:#94a3b8;font-size:.8rem;margin-top:.25rem;">
+                                        #{coursePageBean.video.formattedDuration}
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+                        </div>
+                    </div>
+                </h:panelGroup>
+
+                <!-- ARTICLE PANEL -->
+                <h:panelGroup rendered="#{coursePageBean.hasArticle()}" layout="block">
+                    <div id="content-article" style="display:none;">
+                        <div class="article-body">
+                            <h:outputText value="#{coursePageBean.article.body}" escape="false"/>
+                        </div>
+                    </div>
+                </h:panelGroup>
+
+                <!-- QUIZ PANEL -->
+                <h:panelGroup rendered="#{coursePageBean.hasQuiz()}" layout="block">
+                    <div id="content-quiz" style="display:none;">
+                        <h:form id="quizForm">
+                            <p:messages for="quizMsg" showDetail="true" style="margin-bottom:1rem;"/>
+                            <div style="font-size:1.1rem;font-weight:700;color:#f1f5f9;margin-bottom:1rem;">
+                                #{coursePageBean.quiz.title}
+                            </div>
+                            <ui:repeat value="#{coursePageBean.quiz.questions}" var="q" varStatus="vs">
+                                <div class="quiz-card">
+                                    <div class="quiz-question">#{vs.index + 1}. #{q.questionText}</div>
+                                    <h:selectOneRadio id="ans_#{q.id}"
+                                                      value="#{coursePageBean.selectedAnswers[q.id]}"
+                                                      layout="pageDirection"
+                                                      styleClass="quiz-radio">
+                                        <f:selectItems value="#{q.answers}" var="ans"
+                                                       itemValue="#{ans.id}" itemLabel="#{ans.text}"/>
+                                    </h:selectOneRadio>
+                                </div>
+                            </ui:repeat>
+                            <h:panelGroup rendered="#{!coursePageBean.quizSubmitted}" layout="block">
+                                <p:commandButton value="Enviar respuestas" icon="pi pi-check"
+                                                 style="background:#7c3aed;border-color:#7c3aed;"
+                                                 action="#{coursePageBean.submitQuiz}"
+                                                 update="quizForm"
+                                                 oncomplete="onQuizDone()"
+                                                 process="quizForm"/>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{coursePageBean.quizSubmitted}" layout="block">
+                                <div style="color:#22c55e;font-weight:600;padding:.75rem 0;">
+                                    &#10003; Respuestas enviadas
+                                </div>
+                            </h:panelGroup>
+                        </h:form>
+                    </div>
+                </h:panelGroup>
+
+                <!-- no content fallback -->
+                <h:panelGroup rendered="#{!coursePageBean.hasVideo() and !coursePageBean.hasArticle() and !coursePageBean.hasQuiz()}"
+                              layout="block">
+                    <div style="color:#64748b;padding:2rem 0;">Esta lección no tiene contenido asignado aún.</div>
+                </h:panelGroup>
+
+                <!-- ── COMPLETE SECTION (revealed by JS once all tabs visited + quiz done) ── -->
+                <div style="margin-top:2rem;padding-top:1rem;border-top:1px solid #334155;">
+                    <h:form id="completeForm">
+                        <h:panelGroup rendered="#{courseBean.isCompleted(courseBean.selectedLessonId)}" layout="block">
+                            <span style="color:#22c55e;font-weight:600;font-size:.95rem;">&#10003; Lección completada</span>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{!courseBean.isCompleted(courseBean.selectedLessonId)}" layout="block">
+                            <div id="completeWrapper" style="display:none;">
+                                <p:commandButton value="Marcar como completada" icon="pi pi-check-circle"
+                                                 style="background:#22c55e;border-color:#16a34a;font-size:.88rem;padding:.5rem 1.1rem;"
+                                                 action="#{coursePageBean.markCompleted}"
+                                                 ajax="false"/>
+                            </div>
+                            <div id="completeLock" style="color:#64748b;font-size:.85rem;">
+                                Completa todos los apartados para marcar la lección como finalizada.
+                            </div>
+                        </h:panelGroup>
+                    </h:form>
+                </div>
+
+            </div>
+            <!-- end tab-lesson -->
+
+            <!-- ── REINFORCEMENT CONTENT ─────────────────────────────────── -->
+            <h:panelGroup id="tab-reinforcement" layout="block" style="display:none;"
+                          rendered="#{coursePageBean.hasReinforcement}">
+
+                <h:panelGroup rendered="#{coursePageBean.hasReinforcementVideo()}" layout="block">
+                    <div class="video-wrap">
+                        <div class="video-placeholder">
+                            <div style="font-size:4rem;">&#9654;</div>
+                            <div>#{coursePageBean.reinforcementVideo.url}</div>
+                        </div>
+                    </div>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{coursePageBean.hasReinforcementArticle()}" layout="block">
+                    <div class="article-body">
+                        <h:outputText value="#{coursePageBean.reinforcementArticle.body}" escape="false"/>
+                    </div>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{coursePageBean.hasReinforcementQuiz()}" layout="block">
+                    <div style="font-size:1rem;font-weight:600;color:#a78bfa;margin-bottom:1rem;">
+                        #{coursePageBean.reinforcementQuiz.title}
+                    </div>
+                    <ui:repeat value="#{coursePageBean.reinforcementQuiz.questions}" var="q" varStatus="vs">
+                        <div class="quiz-card">
+                            <div class="quiz-question">#{vs.index + 1}. #{q.questionText}</div>
+                            <ui:repeat value="#{q.answers}" var="ans">
+                                <label class="answer-option">
+                                    <input type="radio" name="rq_#{q.id}" value="#{ans.id}"
+                                           style="accent-color:#7c3aed;flex-shrink:0;"/>
+                                    &#160;#{ans.text}
+                                </label>
+                            </ui:repeat>
+                        </div>
+                    </ui:repeat>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{!coursePageBean.hasReinforcementVideo() and !coursePageBean.hasReinforcementArticle() and !coursePageBean.hasReinforcementQuiz()}"
+                              layout="block">
+                    <div style="color:#64748b;padding:2rem 0;">Sin material de refuerzo para esta lección.</div>
+                </h:panelGroup>
+
+            </h:panelGroup>
+            <!-- end tab-reinforcement -->
+
+            <!-- prev / next navigation -->
+            <div class="lesson-nav">
+                <h:panelGroup layout="block">
+                    <h:panelGroup rendered="#{courseBean.prevLesson != null}" layout="block">
+                        <h:link outcome="/course" styleClass="nav-btn nav-btn-ghost">
+                            <f:param name="lessonId" value="#{courseBean.prevLesson.id}"/>
+                            &#8592; Anterior
+                        </h:link>
+                    </h:panelGroup>
+                </h:panelGroup>
+                <h:panelGroup layout="block">
+                    <h:panelGroup rendered="#{courseBean.nextLesson != null}" layout="block">
+                        <h:link outcome="/course" styleClass="nav-btn nav-btn-primary">
+                            <f:param name="lessonId" value="#{courseBean.nextLesson.id}"/>
+                            Siguiente &#8594;
+                        </h:link>
+                    </h:panelGroup>
+                </h:panelGroup>
+            </div>
+
+        </h:panelGroup>
+        <!-- end selectedLessonId gt 0 -->
+
+    </div>
+    <!-- end content-area -->
+
+</div>
+
+<script>//<![CDATA[
+// ── top-level tab (Lección vs Material de refuerzo) ──────────────────────────
+function showTab(name, btn) {
+    document.querySelectorAll('[id^="tab-"]').forEach(function(el) { el.style.display = 'none'; });
+    document.getElementById('tab-' + name).style.display = 'block';
+    document.querySelectorAll('.ltab').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+}
+
+// ── content sub-tabs (Video / Artículo / Quiz) ────────────────────────────────
+var ctabRequired = new Set();
+var ctabVisited  = new Set();
+var quizDone     = #{coursePageBean.quizSubmitted};
+
+function showCtab(name, btn) {
+    ctabRequired.forEach(function(t) {
+        var el = document.getElementById('content-' + t);
+        if (el) el.style.display = 'none';
+    });
+    document.querySelectorAll('.ctab').forEach(function(b) { b.classList.remove('active'); });
+    var panel = document.getElementById('content-' + name);
+    if (panel) { panel.style.display = 'block'; }
+    if (btn) btn.classList.add('active');
+    ctabVisited.add(name);
+    checkUnlock();
+}
+
+function onQuizDone() {
+    quizDone = true;
+    ctabVisited.add('quiz');
+    checkUnlock();
+}
+
+function checkUnlock() {
+    var allDone = true;
+    ctabRequired.forEach(function(t) {
+        if (t === 'quiz') {
+            if (!quizDone) allDone = false;
+        } else {
+            if (!ctabVisited.has(t)) allDone = false;
+        }
+    });
+    var wrapper = document.getElementById('completeWrapper');
+    var lock    = document.getElementById('completeLock');
+    if (wrapper) wrapper.style.display = allDone ? 'block' : 'none';
+    if (lock)    lock.style.display    = allDone ? 'none'  : 'block';
+}
+
+(function initContentTabs() {
+    ['video', 'article', 'quiz'].forEach(function(t) {
+        if (document.getElementById('content-' + t)) ctabRequired.add(t);
+    });
+    // auto-open the first available tab
+    var opened = false;
+    ['video', 'article', 'quiz'].forEach(function(t) {
+        if (!opened && ctabRequired.has(t)) {
+            var btn = document.querySelector('.ctab[onclick*="\'' + t + '\'"]');
+            showCtab(t, btn);
+            opened = true;
+        }
+    });
+    checkUnlock();
+})();
+//]]></script>
+
+</ui:define>
+</ui:composition>
+</html>

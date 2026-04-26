@@ -20,8 +20,11 @@ public class QuizAttemptItem implements Serializable {
     public double getScore() { return score; }
     public double getMaxScore() { return maxScore; }
 
-    public String getRatio() {
-        if (maxScore == 0) return "N/A";
-        return String.format("%.0f%%", (score / maxScore) * 100);
+    public double getRatio() {
+        return maxScore == 0 ? 0 : score / maxScore;
+    }
+
+    public String getRatioLabel() {
+        return maxScore == 0 ? "N/A" : String.format("%.0f%%", (score / maxScore) * 100);
     }
 }
