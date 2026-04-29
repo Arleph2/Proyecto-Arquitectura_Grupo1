@@ -1,766 +1,590 @@
-# Software Requirements Specification (SRS)
+# Software Requirements Specification
+
+## for
+
 ## Plataforma de Aprendizaje Adaptativo y Colaborativo
 
-**Version:** 1.0
-**Fecha:** 20/03/2026
+**Version 2.0 approved**
 
+**Prepared by** Equipo de Arquitectura de Software
+
+**Pontificia Universidad Javeriana**
+
+**26/04/2026**
 
 ---
 
-## 1. INTRODUCCION
+## Revision History
 
-### 1.1 Proposito
+| Name | Date | Reason For Changes | Version |
+|------|------|--------------------|---------| 
+| Equipo | 20/03/2026 | Borrador inicial | 1.0 |
+| Equipo | 26/04/2026 | Reestructuracion completa segun plantilla IEEE; features con sub-requisitos REQ y secuencias estimulo/respuesta; seccion 4 interfaces externas; RNFs por sub-atributos ISO 25010; rol Directivo; escenarios de calidad al final | 2.0 |
 
-Este documento describe los requisitos funcionales y no funcionales de la **Plataforma de Aprendizaje Adaptativo y Colaborativo**. Su proposito es establecer de forma clara que debe hacer el sistema y como debe hacerlo antes de comenzar el diseño arquitectonico.
+---
 
-### 1.2 Alcance
+# 1. Introduction
 
-La plataforma permite a estudiantes y docentes interactuar en un entorno digital de aprendizaje. El sistema adapta el recorrido educativo de cada estudiante en funcion de su progreso y resultados en evaluaciones, y fomenta la colaboracion mediante foros, grupos de estudio y tutorias entre pares. Los profesores pueden diseñar cursos, publicar materiales, definir evaluaciones y monitorear el progreso del grupo. La plataforma genera analitica de desempeño para apoyar la toma de decisiones pedagogicas.
+## 1.1 Purpose
 
-### 1.3 Definiciones, Acronimos y Abreviaciones
+Este documento cubre los requisitos de software de la **Plataforma de Aprendizaje Adaptativo y Colaborativo, version 2.0**: un LMS dirigido a instituciones educativas colombianas con motor de adaptacion basado en reglas configurables por docentes y herramientas de colaboracion entre pares (foros, grupos de estudio, tutorias).
+
+El alcance incluye el modulo de gestion de cursos, evaluaciones con calificacion automatica, motor de aprendizaje adaptativo, colaboracion (foros, grupos y chat), seguimiento del progreso y analitica de desempeno, tableros de control para directivos, y gestion de usuarios con RBAC. El sistema de registro academico institucional y los modulos de facturacion o pagos quedan fuera del alcance.
+
+## 1.2 Document Conventions
+
+- Los requisitos funcionales se organizan por **system features** (seccion 3). Cada feature agrupa sub-requisitos identificados como REQ-X.Y.Z. Las prioridades de los sub-requisitos heredan la del feature padre, salvo indicacion contraria.
+- Los requisitos no funcionales (seccion 5) siguen **ISO/IEC 25010:2011**, descompuestos por atributo y sub-atributo con metricas medibles.
+- Las prioridades usan cuatro componentes: beneficio (1-9), penalidad (1-9), costo (1-9) y riesgo (1-9). Se clasifican en Alta (beneficio >= 7), Media (4-6) y Baja (1-3).
+- Los textos en **negrita** indican nombres de roles, estados o valores de configuracion del sistema.
+- "TBD" marca informacion aun no disponible.
+
+## 1.3 Intended Audience and Reading Suggestions
+
+- **Desarrolladores:** Leer completo con atencion especial a la seccion 3 (secuencias estimulo/respuesta y requisitos), seccion 4 (Interfaces) y seccion 5 (RNF).
+- **Arquitecto de software:** Comenzar por 1.4 (Scope), luego 5 (RNF), 7 (Drivers) y 8 (Escenarios de Calidad), que orientan las decisiones del SAD.
+- **Gerente de proyecto / Directivo institucional:** Secciones 1 y 2 para vision general; seccion 2.3 (User Classes) para entender los perfiles de usuario.
+- **Testers / QA:** Seccion 3 (secuencias estimulo/respuesta y criterios) y seccion 8 (Escenarios de Calidad).
+- **Docentes y usuarios finales:** Seccion 2 para contexto del producto y seccion 3 para funcionalidades.
+
+El documento avanza de lo general a lo especifico: la seccion 1 presenta el proyecto, la 2 describe el contexto, la 3 detalla funcionalidades, la 4 cubre interfaces, la 5 define atributos de calidad, y las secciones 7 y 8 conectan los requisitos con la arquitectura.
+
+## 1.4 Project Scope
+
+La **Plataforma de Aprendizaje Adaptativo y Colaborativo** es un producto nuevo desarrollado como proyecto academico en la Pontificia Universidad Javeriana. Busca mejorar los resultados de aprendizaje mediante dos mecanismos diferenciadores:
+
+1. **Motor de aprendizaje adaptativo basado en reglas:** Al completar una evaluacion, el sistema compara la calificacion del estudiante contra un umbral que el docente configura por leccion. Si la calificacion queda por debajo del umbral, el sistema entrega automaticamente materiales de refuerzo en los temas con menor puntaje; si alcanza o supera el umbral, desbloquea contenido de mayor complejidad o la siguiente leccion. El motor **no modifica el recorrido curricular** — la secuencia de modulos y lecciones la define el docente — sino que alimenta al estudiante con recursos adicionales donde muestra debilidades. El docente puede ajustar las reglas sin intervencion tecnica ni redespliegue del sistema.
+
+2. **Herramientas de colaboracion entre pares:** Foros de discusion por curso y modulo, grupos de estudio con chat en tiempo real, e identificacion automatica de candidatos a tutor (estudiantes con calificacion promedio >85%) para asistir a companeros con dificultades.
+
+**Beneficios esperados por perfil de usuario:**
+- **Estudiantes:** retroalimentacion inmediata, materiales de refuerzo personalizados, colaboracion con pares y tutorias.
+- **Docentes:** creacion y gestion de cursos, configuracion del motor adaptativo, visibilidad del progreso individual y grupal, alertas automaticas cuando mas del 30% de estudiantes reprueba una evaluacion, y exportacion de reportes.
+- **Directivos:** tableros de control con metricas globales (tasa de aprobacion, cursos con mayor dificultad, estudiantes activos) para decisiones estrategicas. El directivo no accede al detalle de cursos individuales; su vision es institucional y agregada.
+- **Administradores:** gestion centralizada de usuarios, roles y configuracion.
+
+**En cuanto a restricciones:** la plataforma no reemplaza el sistema de registro academico institucional ni gestiona inscripciones oficiales, notas oficiales, certificados o facturacion. No implementa inteligencia artificial ni machine learning; el motor es determinista basado en reglas. SCORM no esta soportado en esta version. El cumplimiento de la Ley 1581 de 2012 es obligatorio porque el sistema gestiona datos de estudiantes que pueden ser menores de edad.
+
+## 1.5 References
+
+| # | Titulo | Autor | Version | Fecha | Fuente |
+|---|--------|-------|---------|-------|--------|
+| 1 | Enunciado del proyecto: Plataforma de Aprendizaje Adaptativo y Colaborativo | PUJ | 0.9 | 2026 | Curso Arquitectura de Software |
+| 2 | ISO/IEC 25010:2011 — SQuaRE Quality Model | ISO/IEC | 2011 | 2011 | iso.org |
+| 3 | Ley 1581 de 2012 — Proteccion de Datos Personales | Congreso de Colombia | - | 2012 | funcionpublica.gov.co |
+| 4 | Software Architecture in Practice | Bass, Clements & Kazman | 3ra ed. | 2012 | Addison-Wesley |
+| 5 | SAD de la Plataforma | Equipo | 3.0 | 26/04/2026 | Repositorio del proyecto |
+| 6 | Fundamentals of Software Architecture | Richards & Ford | 1ra ed. | 2020 | O'Reilly |
+| 7 | xAPI Specification | ADL Initiative | 2.0 | 2023 | adlnet.gov |
+
+---
+
+# 2. Overall Description
+
+## 2.1 Product Perspective
+
+La plataforma es un **producto nuevo e independiente**: no reemplaza ni extiende ningun sistema existente. En su primera version opera de forma autonoma; en versiones futuras se integrara con sistemas de registro academico institucionales mediante APIs REST y el protocolo xAPI.
+
+Dentro del ecosistema educativo convive con el sistema de registro academico (matriculas y notas oficiales), plataformas de videoconferencia y repositorios documentales. La plataforma los complementa con aprendizaje adaptativo y colaboracion que los LMS tradicionales no ofrecen.
+
+[Espacio para diagrama de contexto del sistema]
+
+## 2.2 Product Features
+
+Resumen de alto nivel; los detalles estan en la Seccion 3.
+
+1. **Gestion de cursos:** Creacion, edicion, organizacion en modulos/lecciones, gestion de materiales, publicacion.
+2. **Evaluaciones y calificacion automatica:** Quizzes con multiples tipos de pregunta, temporizador, calificacion automatica y retroalimentacion inmediata.
+3. **Motor de aprendizaje adaptativo:** Reglas por leccion (umbral, refuerzo, avance), aplicacion automatica post-evaluacion. No modifica el recorrido curricular.
+4. **Foros de discusion:** Foros por curso y modulo, hilos, respuestas, moderacion y notificaciones asincronas.
+5. **Grupos de estudio y tutorias:** Grupos con chat, identificacion automatica de tutores (>85%), asignacion manual.
+6. **Seguimiento del progreso:** Dashboard individual del estudiante y vista por estudiante para el docente.
+7. **Analitica para docentes y directivos:** Reportes por curso, alertas automaticas, exportacion y tableros institucionales para directivos.
+8. **Gestion de usuarios y roles:** Registro, JWT, RBAC con 4 roles (Estudiante, Docente, Directivo, Administrador).
+
+[Espacio para diagrama de alto nivel de relaciones entre features]
+
+## 2.3 User Classes and Characteristics
+
+| Clase | Frecuencia | Funciones | Expertise | Privilegio | Importancia |
+|-------|-----------|-----------|-----------|------------|-------------|
+| **Estudiante** | Diaria. Picos antes de evaluaciones | Cursos, evaluaciones, materiales adaptativos, foros, grupos, progreso | Basico | STUDENT | Primario |
+| **Docente** | Diaria, distribuida | Crear cursos, materiales, evaluaciones, reglas adaptativas, moderar foros, analitica | Medio | INSTRUCTOR | Primario |
+| **Directivo** | Semanal/quincenal | Tableros institucionales con metricas agregadas. Sin acceso al detalle de cursos ni estudiantes individuales | Medio - estrategico | DIRECTOR | Secundario |
+| **Administrador** | Segun necesidad | Gestion de cuentas, roles, configuracion, estado del sistema | Alto - tecnico | ADMIN | Secundario |
+
+El **Estudiante** es el usuario mas importante, seguido del **Docente**.
+
+## 2.4 Operating Environment
+
+- **Cliente:** Navegadores Chrome, Firefox, Safari, Edge (ultimas 2 versiones). Windows 10+, macOS 11+, iOS 15+, Android 11+.
+- **Servidor:** AWS (us-east-1 o sa-east-1). ECS Fargate, RDS PostgreSQL 15, ElastiCache Redis 7, SNS/SQS, S3, CloudWatch.
+- **Backend:** Node.js 20 LTS sobre Docker.
+- **BD:** PostgreSQL 15.
+- **Coexistencia:** Opera junto al sistema de registro academico sin interferencia.
+
+## 2.5 Design and Implementation Constraints
+
+- **Regulatorias:** Ley 1581/2012. Datos en region America. Consentimiento explicito.
+- **Equipo:** 3-4 personas. Descarta microservicios. Requiere alta automatizacion CI/CD.
+- **Presupuesto:** BD compartida con schemas logicos.
+- **Tecnologias fijas:** React.js 18, Node.js, PostgreSQL.
+- **Comunicaciones:** REST/JSON, HTTPS (TLS 1.2+), OpenAPI 3.0.
+- **Seguridad:** JWT RS256, bcrypt (costo >= 12), RBAC.
+
+## 2.6 User Documentation
+
+- Manual de usuario Estudiante (web, seccion "Ayuda").
+- Manual de usuario Docente (web + PDF).
+- Guia rapida Directivos (PDF, 2-3 paginas).
+- Manual de administracion (Markdown, repositorio).
+- Documentacion API: OpenAPI 3.0 en /docs de cada servicio.
+
+## 2.7 Assumptions and Dependencies
+
+**Suposiciones:** Usuarios con correo institucional; conexion internet estable (>= 1 Mbps); poblacion inicial <= 5,000 concurrentes (escala a 10,000); docentes dispuestos a configurar reglas; contenido provisto por docentes.
+
+**Dependencias:** AWS; PostgreSQL 15; Node.js 20 LTS; servicio de correo institucional.
+
+---
+
+# 3. System Features
+
+## 3.1 Gestion de Cursos
+
+### 3.1.1 Description and Priority
+Permite a docentes crear, editar, organizar y publicar cursos con modulos, lecciones y materiales educativos (PDFs, videos, textos, enlaces).
+**Prioridad:** Alta — Beneficio: 9, Penalidad: 9, Costo: 5, Riesgo: 3.
+
+### 3.1.2 Stimulus/Response Sequences
+- Docente selecciona "Crear curso" -> Sistema presenta formulario -> Docente ingresa titulo, descripcion, portada -> Sistema crea curso en DRAFT.
+- Docente selecciona "Agregar modulo" -> Ingresa nombre y descripcion -> Sistema registra modulo.
+- Docente selecciona "Agregar leccion" en modulo -> Ingresa titulo, sube materiales -> Sistema almacena y asocia.
+- Docente selecciona "Publicar" -> Sistema verifica >= 1 modulo con >= 1 leccion -> Estado cambia a PUBLISHED.
+- Docente edita curso PUBLISHED -> Cambios visibles inmediatamente para inscritos.
+
+### 3.1.3 Functional Requirements
+REQ-3.1.1: El docente puede crear un curso con titulo (obligatorio, max 200 chars), descripcion (obligatoria, max 2000 chars) e imagen de portada (opcional, JPG/PNG, max 5 MB). Estado inicial: DRAFT.
+
+REQ-3.1.2: El docente puede agregar, editar, reordenar y eliminar modulos (nombre obligatorio, descripcion opcional) y lecciones (titulo obligatorio) dentro de un curso.
+
+REQ-3.1.3: El docente puede subir materiales asociados a lecciones. Formatos soportados: PDF, MP4, enlaces YouTube/Vimeo, texto enriquecido, enlaces externos. Max 50 MB por archivo. Los materiales se sirven via URLs prefirmadas.
+
+REQ-3.1.4: El docente puede cambiar el estado entre DRAFT y PUBLISHED. Publicar requiere >= 1 modulo con >= 1 leccion. Despublicar un curso con inscritos activos requiere confirmacion.
+
+REQ-3.1.5: Los cursos en DRAFT no son visibles en el catalogo. Los cursos PUBLISHED si aparecen y aceptan inscripciones.
+
+REQ-3.1.6: Solo los roles INSTRUCTOR o ADMIN pueden gestionar cursos. Un docente unicamente gestiona sus propios cursos.
+
+---
+
+## 3.2 Evaluaciones y Calificacion Automatica
+
+### 3.2.1 Description and Priority
+Permite crear quizzes con multiples tipos de pregunta y calificar automaticamente respuestas objetivas con retroalimentacion inmediata.
+**Prioridad:** Alta — Beneficio: 9, Penalidad: 8, Costo: 6, Riesgo: 4.
+
+### 3.2.2 Stimulus/Response Sequences
+- Docente crea evaluacion en leccion -> Agrega preguntas -> Configura intentos, tiempo, disponibilidad -> Sistema registra.
+- Estudiante selecciona evaluacion -> Sistema verifica inscripcion, periodo, intentos -> Presenta preguntas con temporizador -> Estudiante responde y envia -> Sistema califica y muestra retroalimentacion + siguiente contenido.
+- Tiempo agotado -> Sistema envia respuestas registradas y califica.
+- Intentos agotados -> Sistema muestra "Intentos agotados".
+
+### 3.2.3 Functional Requirements
+REQ-3.2.1: Tipos de pregunta soportados: opcion multiple (unica), opcion multiple (multiple), verdadero/falso, respuesta corta, emparejamiento.
+
+REQ-3.2.2: Configurable por evaluacion: intentos maximos (1 a ilimitados), tiempo limite (minutos, opcional), fecha inicio/fin de disponibilidad.
+
+REQ-3.2.3: Calificacion automatica al envio para opcion multiple, verdadero/falso y emparejamiento. La respuesta corta queda pendiente de revision manual por el docente.
+
+REQ-3.2.4: Al terminar, el estudiante ve: nota (%), respuestas correctas e incorrectas, y retroalimentacion por pregunta (si el docente la configuro).
+
+REQ-3.2.5: Si el tiempo se agota, el sistema envia automaticamente las respuestas registradas hasta ese momento.
+
+REQ-3.2.6: Las respuestas en progreso se mantienen en almacenamiento local (SPA) para recuperacion ante desconexion.
+
+REQ-3.2.7: Cada intento registra: studentId, respuestas, nota, timestamp de inicio y timestamp de envio.
+
+---
+
+## 3.3 Motor de Aprendizaje Adaptativo
+
+### 3.3.1 Description and Priority
+Adapta los materiales entregados segun el desempeno en evaluaciones. Las reglas son deterministas y el docente las configura sin intervencion tecnica. El motor no modifica el recorrido curricular; entrega contenido complementario donde el estudiante muestra debilidades.
+**Prioridad:** Alta — Beneficio: 9, Penalidad: 7, Costo: 5, Riesgo: 5. Es el diferenciador funcional del sistema.
+
+### 3.3.2 Stimulus/Response Sequences
+- Docente configura regla: selecciona leccion -> umbral (0-100) -> materiales de refuerzo -> contenido avanzado -> confirma -> Sistema almacena (efecto en <= 60s).
+- Post-evaluacion: Sistema califica -> consulta regla -> Si nota < umbral: muestra refuerzo. Si nota >= umbral: desbloquea avance -> Registra decision en progreso.
+
+### 3.3.3 Functional Requirements
+REQ-3.3.1: Configurable por leccion: umbral (0-100), materiales de refuerzo (existentes o nuevos) y contenido avanzado a desbloquear.
+
+REQ-3.3.2: Validacion en tiempo real del umbral (0-100); el formulario impide enviar valores fuera del rango.
+
+REQ-3.3.3: Tras la calificacion, si existe una regla: nota < umbral -> incluir refuerzo en la respuesta; nota >= umbral -> incluir siguiente leccion o contenido avanzado.
+
+REQ-3.3.4: La decision adaptativa queda registrada en el historial de progreso del estudiante.
+
+REQ-3.3.5: Las reglas son modificables sin redespliegue. El cambio tiene efecto en la siguiente evaluacion, con un retraso maximo de 60s.
+
+REQ-3.3.6: Solo el INSTRUCTOR propietario o un ADMIN pueden gestionar las reglas.
+
+---
+
+## 3.4 Foros de Discusion y Colaboracion
+
+### 3.4.1 Description and Priority
+Foros por curso y modulo para publicar preguntas, respuestas y comentarios.
+**Prioridad:** Media — Beneficio: 6, Penalidad: 4, Costo: 4, Riesgo: 2.
+
+### 3.4.2 Stimulus/Response Sequences
+- Usuario crea hilo -> escribe titulo y contenido -> Sistema registra y muestra en el foro.
+- Usuario responde a hilo -> Sistema registra y envia notificaciones asincronas.
+- Docente modera -> fija, elimina o cierra un hilo -> Sistema ejecuta. La eliminacion usa soft delete.
+
+### 3.4.3 Functional Requirements
+REQ-3.4.1: Cada curso tiene al menos un foro general. El docente puede crear foros adicionales por modulo.
+
+REQ-3.4.2: Los inscritos y el docente pueden crear hilos y responder dentro de cualquier foro del curso.
+
+REQ-3.4.3: Se permite un "Me gusta" por publicacion y por usuario.
+
+REQ-3.4.4: El docente puede fijar hilos (max 3 por foro), eliminarlos (soft delete) o cerrarlos (solo lectura).
+
+REQ-3.4.5: Las notificaciones asincronas se envian al responder un hilo o por actividad en hilos suscritos, sin afectar la latencia de las operaciones principales.
+
+REQ-3.4.6: Los foros e hilos cerrados se muestran en modo de solo lectura.
+
+---
+
+## 3.5 Grupos de Estudio y Tutorias entre Pares
+
+### 3.5.1 Description and Priority
+Grupos de estudio con chat y tutorias por pares.
+**Prioridad:** Media — Beneficio: 5, Penalidad: 3, Costo: 5, Riesgo: 3.
+
+### 3.5.2 Stimulus/Response Sequences
+- Estudiante crea grupo -> nombre, descripcion, max integrantes -> Sistema crea grupo y habilita chat.
+- Estudiante se une al grupo -> Sistema lo agrega y evalua si es candidato a tutor (>85%).
+- Grupo lleno -> Sistema muestra "Grupo completo" y sugiere alternativas.
+
+### 3.5.3 Functional Requirements
+REQ-3.5.1: El estudiante puede crear un grupo con nombre, descripcion y maximo de integrantes (2-20).
+
+REQ-3.5.2: Cualquier estudiante puede unirse a grupos con plazas disponibles. Se permiten multiples grupos por curso.
+
+REQ-3.5.3: El sistema identifica automaticamente candidatos a tutor (calificacion promedio > 85%). La aceptacion es voluntaria.
+
+REQ-3.5.4: El docente puede asignar un tutor manualmente.
+
+REQ-3.5.5: El chat en tiempo real por grupo soporta texto y archivos (PDF e imagenes, max 10 MB). El historial es persistente.
+
+REQ-3.5.6: El docente puede ver la lista de grupos, su composicion y el tutor asignado.
+
+---
+
+## 3.6 Seguimiento del Progreso
+
+### 3.6.1 Description and Priority
+Dashboard de progreso para estudiantes y vista por estudiante para docentes.
+**Prioridad:** Alta — Beneficio: 7, Penalidad: 6, Costo: 3, Riesgo: 2.
+
+### 3.6.2 Stimulus/Response Sequences
+- Estudiante selecciona "Mi progreso" -> Sistema muestra avance, calificaciones y siguiente contenido recomendado.
+- Docente selecciona un estudiante -> Sistema muestra su progreso individual detallado.
+
+### 3.6.3 Functional Requirements
+REQ-3.6.1: El estudiante ve: porcentaje de avance por curso, historial de calificaciones (fecha y nota), materiales de refuerzo pendientes y siguiente contenido disponible.
+
+REQ-3.6.2: El progreso se actualiza en tiempo real tras cada actividad completada.
+
+REQ-3.6.3: El docente puede consultar, por cada estudiante: avance, calificaciones, materiales de refuerzo utilizados y decisiones adaptativas tomadas por el motor.
+
+---
+
+## 3.7 Analitica para Docentes y Directivos
+
+### 3.7.1 Description and Priority
+Analitica de desempeno para docentes (a nivel de curso) y tableros de vision institucional para directivos.
+**Prioridad:** Media — Beneficio: 6, Penalidad: 5, Costo: 5, Riesgo: 3.
+
+### 3.7.2 Stimulus/Response Sequences
+- Docente accede a "Analitica" -> Sistema muestra calificacion promedio, tasa de aprobacion, temas dificiles y alertas activas.
+- Mas del 30% de estudiantes reprueba una evaluacion -> El sistema genera una alerta en el dashboard del docente.
+- Docente selecciona "Exportar" -> Elige CSV o PDF -> Descarga inmediata.
+- Directivo accede a "Tablero Institucional" -> Sistema muestra metricas globales agregadas.
+
+### 3.7.3 Functional Requirements
+REQ-3.7.1: El dashboard por curso muestra: calificacion promedio, tasa de aprobacion por evaluacion, temas con mayor tasa de error y estudiantes en riesgo.
+
+REQ-3.7.2: El sistema genera una alerta automatica si mas del 30% reprueba una evaluacion (con minimo 10 intentos completados). La alerta indica la evaluacion, el porcentaje de reprobacion y los temas implicados.
+
+REQ-3.7.3: El docente puede exportar el dashboard en formato CSV y PDF.
+
+REQ-3.7.4: Los reportes consolidados pueden tener hasta 24 horas de retraso. Las vistas individuales son en tiempo real.
+
+REQ-3.7.5: El directivo (DIRECTOR) accede a un tablero con: cursos activos, estudiantes activos, tasa de aprobacion global, cursos con mayor reprobacion y alertas globales.
+
+REQ-3.7.6: El directivo no accede al detalle de cursos ni de estudiantes individuales. Su vision es exclusivamente agregada e institucional.
+
+REQ-3.7.7: El tablero institucional puede tener hasta 24 horas de retraso y es filtrable por periodo (semestre o mes).
+
+---
+
+## 3.8 Gestion de Usuarios y Roles
+
+### 3.8.1 Description and Priority
+Registro, autenticacion y autorizacion con roles.
+**Prioridad:** Alta — Beneficio: 9, Penalidad: 9, Costo: 3, Riesgo: 2.
+
+### 3.8.2 Stimulus/Response Sequences
+- Registro: nombre, correo, contraseña -> validacion -> bcrypt -> cuenta creada.
+- Login: correo + contraseña -> validacion -> JWT RS256 -> redireccion al dashboard del rol.
+- Login fallido -> HTTP 401. Tras 5 fallos consecutivos -> bloqueo por 15 min.
+- Admin gestiona usuarios -> crea, edita o desactiva -> al desactivar, invalida sesiones activas.
+
+### 3.8.3 Functional Requirements
+REQ-3.8.1: Registro con correo institucional unico y contraseña con al menos 8 caracteres, 1 mayuscula y 1 numero.
+
+REQ-3.8.2: Las contraseñas se almacenan con bcrypt, costo >= 12.
+
+REQ-3.8.3: JWT RS256 con payload: userId, email, role, exp (max 8h).
+
+REQ-3.8.4: Las sesiones expiran tras 8 horas de inactividad e invalidan al hacer logout.
+
+REQ-3.8.5: Roles disponibles: STUDENT, INSTRUCTOR, DIRECTOR, ADMIN. El sistema verifica el rol en cada peticion.
+
+REQ-3.8.6: El Admin puede crear, editar, activar y desactivar cuentas asignando el rol correspondiente.
+
+REQ-3.8.7: Desactivar una cuenta invalida sus sesiones activas (estado REVOKED). No hay auto-desactivacion por inactividad.
+
+REQ-3.8.8: El sistema registra en log de auditoria: login exitoso y fallido, logout, y operaciones de escritura. Cada entrada incluye timestamp, userId e IP de origen. Retencion minima: 1 año.
+
+---
+
+# 4. External Interface Requirements
+
+## 4.1 User Interfaces
+
+SPA React.js 18. Diseño responsive (desktop >= 1024px, tablet >= 768px, movil >= 375px). Menu lateral en desktop, hamburguesa en movil. Dashboard por rol al login. Validacion en tiempo real. Toasts para confirmaciones y errores. Contraste WCAG 2.1 AA. El detalle visual queda en el documento separado de UI specification.
+
+## 4.2 Hardware Interfaces
+
+Sin interfaces con hardware especializado. El acceso ocurre a traves del navegador sobre hardware estandar. Los archivos se almacenan en AWS S3.
+
+## 4.3 Software Interfaces
+
+| Componente | Version | Interfaz |
+|------------|---------|----------|
+| PostgreSQL | 15 | BD relacional. Cada servicio usa su schema via Prisma ORM. TCP. |
+| Redis (ElastiCache) | 7 | Cache. Sesiones (TTL=8h), cursos (TTL=3600s), reglas (TTL=60s). TCP. |
+| AWS S3 | - | Almacenamiento de materiales. URLs prefirmadas. HTTPS. |
+| AWS SNS/SQS | - | Mensajeria asincrona. Assessment publica eventos JSON; Analytics y Collaboration consumen. |
+| AWS CloudWatch | - | Logs JSON estructurados y metricas. |
+
+## 4.4 Communications Interfaces
+
+- HTTPS (TLS 1.2+) para toda comunicacion cliente-servidor.
+- REST/JSON con OpenAPI 3.0. Versionado /api/v1/.
+- WebSocket (WSS) para el chat en tiempo real de grupos de estudio.
+- HTTP interno en VPC entre API Gateway y servicios backend.
+- SNS/SQS para eventos asincronos internos. Formato JSON con esquema TypeScript.
+- Throughput minimo: 500 req/s en pico.
+
+---
+
+# 5. Other Nonfunctional Requirements
+
+Estandar de referencia: **ISO/IEC 25010:2011**. Cada atributo se descompone en sub-atributos con metricas verificables.
+
+## 5.1 Performance Requirements
+
+**Sub-atributo: Time Behaviour**
+- RNF-01a: Operaciones principales <= 2 seg P95.
+- RNF-01b: Login <= 500ms P95 bajo 500 logins simultaneos.
+- RNF-01c: SPA first contentful paint <= 2 seg P95.
+
+**Sub-atributo: Resource Utilization**
+- RNF-01d: CPU por instancia <= 70%.
+- RNF-01e: Memoria por instancia <= 512 MB.
+- RNF-01f: Pool BD: max 20 conexiones por servicio (PgBouncer).
+
+**Sub-atributo: Capacity**
+- RNF-01g: Throughput >= 500 req/s en pico.
+- RNF-01h: >= 500 cursos activos simultaneos.
+
+## 5.2 Safety Requirements
+
+- RNF-02a: Las respuestas de evaluacion se mantienen en almacenamiento local del navegador ante desconexion; el sistema las sincroniza automaticamente al restaurar la conexion.
+- RNF-02b: Las eliminaciones usan soft delete.
+- RNF-02c: Las operaciones destructivas requieren confirmacion explicita del usuario.
+
+## 5.3 Security Requirements
+
+**Sub-atributo: Resistir ataques (Confidentiality + Integrity)**
+- RNF-03a: TLS 1.2+ en toda comunicacion externa.
+- RNF-03b: Contraseñas con bcrypt, costo >= 12.
+- RNF-03c: Proteccion contra inyeccion SQL mediante ORM.
+- RNF-03d: Rate limiting: 100 req/min/IP en endpoints publicos.
+- RNF-03e: Bloqueo por 15 min tras 5 intentos de login fallidos.
+
+**Sub-atributo: Autenticar y autorizar actores**
+- RNF-03f: JWT RS256, max 8h.
+- RNF-03g: RBAC en dos capas (Gateway + servicio).
+- RNF-03h: Log de auditoria: login, logout y escrituras con timestamp, userId e IP. Retencion >= 1 año.
+
+**Sub-atributo: Proteccion de datos (Compliance)**
+- RNF-03i: Ley 1581/2012: consentimiento explicito y politica de privacidad visible.
+- RNF-03j: Prohibido compartir datos con terceros sin consentimiento.
+- RNF-03k: Datos almacenados en region America.
+
+## 5.4 Software Quality Attributes
+
+**Disponibilidad (Reliability > Availability)**
+- RNF-04a: 99.5% mensual (max ~3.6h downtime/mes).
+- RNF-04b: La falla de un servicio no critico no afecta a los criticos (degradacion controlada).
+- RNF-04c: Deteccion de fallo <= 30 seg.
+- RNF-04d: RTO <= 1h.
+- RNF-04e: RPO <= 15 min.
+- RNF-04f: Failover de BD automatico <= 60 seg (Multi-AZ).
+
+**Escalabilidad (Capacity)**
+- RNF-05a: 5,000 concurrentes sin degradacion.
+- RNF-05b: Escala a 10,000 con ajuste de configuracion.
+- RNF-05c: Auto-scale en <= 5 min.
+- RNF-05d: Auto-scaling activado si CPU > 70% por 3 min. Min 2 instancias en servicios criticos, max 10.
+
+**Mantenibilidad (Maintainability)**
+- RNF-06a: Modularidad: max 3 dependencias entre servicios. Comunicacion solo por REST o eventos.
+- RNF-06b: Modificabilidad: un modulo independiente nuevo tarda <= 2 semanas. Las reglas adaptativas son modificables sin redespliegue.
+- RNF-06c: Testabilidad: logs JSON con Correlation ID. Health checks en /health/live y /health/ready.
+- RNF-06d: Desplegabilidad: CI/CD Blue-Green sin downtime. Rollback en <= 5 min.
+
+**Interoperabilidad (Compatibility)**
+- RNF-07a: REST/JSON, OpenAPI 3.0.
+- RNF-07b: Versionado /api/v1/.
+- RNF-07c: Soporte xAPI planificado para versiones futuras.
+
+---
+
+# 6. Other Requirements
+
+- **Base de datos:** PostgreSQL 15 con schemas separados por dominio. Sin cross-schema queries.
+- **Internacionalizacion:** Solo español (Colombia) en v1. La arquitectura debe permitir agregar otros idiomas.
+- **Legal:** Ley 1581/2012 (ver RNF-03i a RNF-03k).
+- **Reutilizacion:** Las librerias compartidas (libs/) se diseñan para reutilizacion en otros proyectos.
+
+---
+
+# 7. Drivers Arquitecturales
+
+Priorizados por votacion del equipo (escala 1-5), de mayor a menor. Los drivers con puntuacion >= 4 determinan las principales decisiones arquitectonicas.
+
+| Orden | ID | Driver | Tipo | Sub-atributo ISO 25010 | Metrica | Puntuacion |
+|-------|----|--------|------|------------------------|---------|------------|
+| 1 | DR-01 | Rendimiento | RNF | Time Behaviour | <= 2 seg P95 | 4.8 |
+| 2 | DR-04 | Seguridad | RNF | Resistir ataques + Autenticar actores | TLS + JWT + RBAC + Ley 1581 | 4.7 |
+| 3 | DR-07 | Motor Adaptativo | RF | Funcional | Reglas configurables, runtime, sin redespliegue | 4.6 |
+| 4 | DR-03 | Disponibilidad | RNF | Fault Tolerance + Recoverability | 99.5%, RTO <= 1h, RPO <= 15min | 4.5 |
+| 5 | DR-02 | Escalabilidad | RNF | Capacity | >= 5,000 concurrentes | 4.3 |
+| 6 | DR-05 | Mantenibilidad | RNF | Modularity + Deployability | CI/CD, Blue-Green | 3.5 |
+| 7 | DR-06 | Interoperabilidad | RNF | Interoperability | REST + OpenAPI + xAPI | 3.2 |
+
+---
+
+# 8. Escenarios de Calidad
+
+Formato Bass et al.: fuente, estimulo, artefacto, entorno, respuesta, medida. Se definieron antes del diseño para evitar sesgo de confirmacion.
+
+### ESC-01: Rendimiento en Envio de Evaluacion (DR-01)
+| Elemento | Descripcion |
+|----------|-------------|
+| Fuente | 500 estudiantes concurrentes |
+| Estimulo | Envio simultaneo de evaluaciones |
+| Artefacto | Assessment & Adaptive Service |
+| Entorno | Operacion normal, hora pico |
+| Respuesta | Califica, aplica reglas, retorna resultado |
+| Medida | <= 2 seg P95 |
+
+### ESC-02: Disponibilidad ante Falla No Critica (DR-03)
+| Elemento | Descripcion |
+|----------|-------------|
+| Fuente | Falla interna Analytics Service |
+| Estimulo | Analytics deja de responder |
+| Artefacto | API Gateway, Assessment Service |
+| Entorno | Operacion normal |
+| Respuesta | Circuit Breaker detecta la falla. Los servicios criticos siguen operando. HTTP 503 solo para analitica. Los eventos se acumulan en el broker sin perdida |
+| Medida | Deteccion <= 30 seg. Servicios criticos al 99.5% |
+
+### ESC-03: Seguridad ante Fuerza Bruta (DR-04)
+| Elemento | Descripcion |
+|----------|-------------|
+| Fuente | Atacante externo |
+| Estimulo | 100 intentos de login en 1 min |
+| Artefacto | User Service, API Gateway |
+| Entorno | Operacion normal |
+| Respuesta | Bloqueo tras 5 intentos fallidos. Rate limiting activo |
+| Medida | 0 accesos no autorizados. Bloqueo en <= 1 seg tras el 5to intento |
+
+### ESC-04: Escalabilidad ante Pico (DR-02)
+| Elemento | Descripcion |
+|----------|-------------|
+| Fuente | Inicio de examenes |
+| Estimulo | Carga escala de 1,000 a 5,000 concurrentes en 10 min |
+| Artefacto | Todos los servicios (ECS) |
+| Entorno | De operacion normal a pico |
+| Respuesta | Auto-scaling activa nuevas instancias |
+| Medida | Instancias disponibles en <= 5 min. P95 <= 2 seg |
+
+### ESC-05: Modificabilidad Motor Adaptativo (DR-07, DR-05)
+| Elemento | Descripcion |
+|----------|-------------|
+| Fuente | Docente |
+| Estimulo | Cambia el umbral de 70 a 80 |
+| Artefacto | Course Service, Assessment Service |
+| Entorno | Operacion normal, con estudiantes evaluando |
+| Respuesta | Regla actualizada en BD. Cache expira por TTL. El proximo estudiante usa el nuevo umbral |
+| Medida | Efecto en <= 60 seg. Sin redespliegue. Sin interrupcion del servicio |
+
+---
+
+## Appendix A: Glossary
 
 | Termino | Definicion |
 |---------|------------|
-| RF | Requisito Funcional |
-| RNF | Requisito No Funcional |
-| DR | Driver Arquitectural |
-| API | Application Programming Interface |
-| JWT | JSON Web Token |
-| RBAC | Role-Based Access Control |
+| DRAFT | Estado de curso no publicado |
+| PUBLISHED | Estado de curso visible en catalogo |
+| RBAC | Control de acceso basado en roles |
+| JWT | Token firmado con identidad y rol |
+| RS256 | Algoritmo RSA-SHA256 para firma JWT |
+| bcrypt | Funcion hash para contraseñas |
+| TTL | Tiempo de vida en cache |
+| P95 | Percentil 95 |
 | SPA | Single Page Application |
-| ATAM | Architecture Tradeoff Analysis Method |
-| RTO | Recovery Time Objective |
-| RPO | Recovery Point Objective |
-| UC | Use Case (Caso de Uso) |
-| ORM | Object-Relational Mapping |
-| TTL | Time To Live |
-| DLQ | Dead Letter Queue |
-| CDN | Content Delivery Network |
-| WAF | Web Application Firewall |
-| CI/CD | Continuous Integration / Continuous Delivery |
-| AZ | Availability Zone |
+| Soft delete | Eliminacion logica sin borrado fisico |
+| Motor adaptativo | Evaluador de reglas para entrega de refuerzo o avance |
+| xAPI | Estandar para datos de actividades de aprendizaje |
+| DLQ | Cola de mensajes fallidos |
+| Multi-AZ | Despliegue en multiples zonas de disponibilidad |
+| PgBouncer | Proxy de conexiones para PostgreSQL |
+| RTO | Tiempo maximo para restaurar servicio |
+| RPO | Maxima perdida de datos aceptable |
 
-### 1.4 Referencias
+## Appendix B: Analysis Models
 
-- Enunciado del proyecto: *Plataforma de Aprendizaje Adaptativo y Colaborativo* — Arquitectura de Software, Version 0.9, Pontificia Universidad Javeriana, 2026.
-- ISO/IEC 25010:2011 — Modelo de calidad de software.
-- Ley 1581 de 2012 — Proteccion de datos personales en Colombia.
-- Bass, L., Clements, P. & Kazman, R. (2012). *Software Architecture in Practice* (3ra ed.). Addison-Wesley.
-- SAD_4+1_PlataformaAdaptativa.md — Documento de Arquitectura (define patrones y decisiones de diseño).
+[Espacio reservado para: diagrama de casos de uso UML, diagrama de contexto, diagrama de dominio, diagramas de secuencia de escenarios]
 
----
+## Appendix C: Issues List
 
-## 2. DESCRIPCION GENERAL DEL SISTEMA
-
-### 2.1 Perspectiva del Producto
-
-La plataforma es un sistema independiente que se integrara en el futuro con otras plataformas educativas institucionales (interoperabilidad). No reemplaza el sistema de registro academico existente, pero puede consumir datos de este mediante APIs. Opera sobre infraestructura cloud y es accesible desde navegadores web y dispositivos moviles modernos.
-
-### 2.2 Funciones del Producto
-
-1. Gestion de cursos: creacion, edicion y publicacion de contenidos educativos por parte de docentes.
-2. Aprendizaje adaptativo: ajuste automatico del recorrido educativo segun el desempeño del estudiante.
-3. Evaluaciones: creacion, presentacion y calificacion automatica de quizzes y examenes.
-4. Colaboracion entre pares: foros de discusion, grupos de estudio y tutorias entre estudiantes.
-5. Seguimiento del progreso: dashboards de progreso para estudiantes y analitica de desempeño para docentes.
-6. Gestion de usuarios: registro, autenticacion y control de acceso basado en roles.
-
-### 2.3 Caracteristicas de Usuarios
-
-| Tipo de Usuario | Descripcion | Nivel de Expertise |
-|-----------------|-------------|---------------------|
-| **Estudiante** | Accede a contenidos, realiza evaluaciones, participa en grupos y foros, consulta su progreso | Basico - no tecnico |
-| **Docente** | Crea y gestiona cursos, publica materiales, define evaluaciones, monitorea el progreso del grupo | Medio - maneja herramientas digitales basicas |
-| **Administrador** | Gestiona usuarios, configura la plataforma, supervisa el uso del sistema | Alto - perfil tecnico-administrativo |
-
-### 2.4 Restricciones del Sistema
-
-**Restricciones regulatorias:**
-- Cumplimiento con la Ley 1581 de 2012 (proteccion de datos personales en Colombia).
-- Los datos de los estudiantes no pueden compartirse con terceros sin consentimiento explicito.
+| ID | Descripcion | Estado |
+|----|-------------|--------|
+| ISS-01 | Definir si el Directivo accede al detalle de cursos en versiones futuras | Pendiente |
+| ISS-02 | Politica de retencion de auditoria superior a 1 año | Pendiente |
+| ISS-03 | Integracion con registro academico via API | Pendiente |
+| ISS-04 | Soporte SCORM en futuras versiones | Pendiente |
+| ISS-05 | Workflow de calificacion manual para respuesta corta | TBD |
 
 ---
 
-## 3. REQUISITOS FUNCIONALES
-
-### RF-01: Gestion de Cursos
-**Prioridad:** Alta
-**Descripcion:** El sistema debe permitir a los docentes crear, editar, organizar y publicar cursos con modulos, lecciones y materiales educativos (videos, PDFs, enlaces externos).
-
-**Criterios de aceptacion:**
-- El docente puede crear un curso con titulo, descripcion, imagen de portada y modulos en menos de 10 pasos.
-- Los materiales pueden ser archivos PDF, videos o textos.
-- El curso puede estar en estado borrador (solo visible para el docente) o publicado (visible para estudiantes inscritos).
-
----
-
-### RF-02: Evaluaciones y Calificacion Automatica
-**Prioridad:** Alta
-**Descripcion:** El sistema debe permitir a los docentes crear evaluaciones con preguntas de opcion multiple, verdadero/falso y respuesta corta, y al sistema calificar automaticamente las respuestas cuando corresponda.
-
-**Criterios de aceptacion:**
-- El docente puede crear quizzes con minimo 5 tipos de pregunta distintos.
-- El sistema califica automaticamente preguntas de opcion multiple y verdadero/falso al momento de envio.
-- El estudiante recibe retroalimentacion inmediata con la nota y las respuestas correctas tras completar la evaluacion.
-- El docente puede configurar intentos maximos, tiempo limite y fecha de disponibilidad.
-
----
-
-### RF-03: Aprendizaje Adaptativo
-**Prioridad:** Alta
-**Descripcion:** El sistema debe adaptar el recorrido de aprendizaje del estudiante segun su desempeño en evaluaciones. Si el estudiante obtiene una calificacion inferior al umbral definido, el sistema sugiere materiales de refuerzo; si supera el umbral, habilita contenidos de mayor complejidad.
-
-**Criterios de aceptacion:**
-- El docente puede configurar un umbral de aprobacion por leccion (valor entre 0 y 100).
-- Si el estudiante no supera el umbral, el sistema muestra automaticamente materiales de refuerzo relacionados con los temas con menor calificacion.
-- Si el estudiante supera el umbral, el sistema desbloquea la siguiente leccion o un contenido de mayor complejidad.
-- Las reglas de adaptacion son configurables por el docente por curso y modulo.
-
----
-
-### RF-04: Foros de Discusion y Colaboracion
-**Prioridad:** Media
-**Descripcion:** El sistema debe proporcionar foros de discusion asociados a cada curso donde estudiantes y docentes puedan publicar preguntas, respuestas y comentarios, fomentando el aprendizaje colaborativo.
-
-**Criterios de aceptacion:**
-- Cada curso tiene al menos un foro general y puede tener foros por modulo.
-- Los usuarios pueden crear hilos, responder y dar "me gusta" a publicaciones.
-- El docente puede moderar el foro: fijar publicaciones, eliminar contenido inapropiado y cerrar hilos.
-- El sistema envia notificaciones al usuario cuando alguien responde a su publicacion.
-
----
-
-### RF-05: Grupos de Estudio y Tutorias entre Pares
-**Prioridad:** Media
-**Descripcion:** El sistema debe permitir la formacion de grupos de estudio dentro de un curso, asi como la identificacion de estudiantes con alto dominio en un tema para ofrecer tutorias a compañeros con dificultades.
-
-**Criterios de aceptacion:**
-- Un estudiante o docente puede crear un grupo de estudio con nombre, descripcion y maximo de integrantes.
-- El sistema identifica automaticamente estudiantes con calificacion promedio superior al 85% en un tema y les ofrece la opcion de ser tutor.
-- Los grupos de estudio tienen un espacio de chat privado y pueden compartir archivos.
-- El docente puede ver la lista de grupos activos y su composicion.
-
----
-
-### RF-06: Seguimiento del Progreso del Estudiante
-**Prioridad:** Alta
-**Descripcion:** El sistema debe presentar a cada estudiante su progreso detallado por curso: porcentaje de avance y calificaciones por evaluacion.
-
-**Criterios de aceptacion:**
-- El sistema muestra el porcentaje de avance del estudiante en cada curso inscrito.
-- El estudiante puede ver el historial de calificaciones con fecha, nota y retroalimentacion.
-- La informacion se actualiza en tiempo real tras cada actividad completada.
-
----
-
-### RF-07: Analitica para Docentes
-**Prioridad:** Media
-**Descripcion:** El sistema debe proveer a los docentes herramientas de analitica que les permitan identificar patrones de desempeño, temas con mayor dificultad y el estado de las actividades colaborativas.
-
-**Criterios de aceptacion:**
-- El docente accede a un reporte por curso con calificacion promedio, tasa de aprobacion y temas mas fallidos.
-- El sistema genera alertas automaticas cuando mas del 30% de los estudiantes reprueba una evaluacion.
-- El sistema genera un reporte por estudiante con resultados y materiales utilizados.
-- El docente puede exportar reportes en formato CSV o PDF.
-- Los datos se actualizan maximo cada 24 horas para reportes consolidados y en tiempo real para vistas individuales.
-
----
-
-### RF-08: Gestion de Usuarios y Roles
-**Prioridad:** Alta
-**Descripcion:** El sistema debe gestionar el registro, autenticacion y autorizacion de usuarios mediante roles definidos (estudiante, docente, administrador), con soporte para inicio de sesion con credenciales institucionales.
-
-**Criterios de aceptacion:**
-- El sistema soporta registro con correo institucional y contraseña.
-- Los roles son: estudiante, docente y administrador, con permisos diferenciados.
-- El administrador puede crear, editar y desactivar cuentas de usuario.
-- Las sesiones expiran tras 8 horas de inactividad y el token JWT se invalida al cerrar sesion.
-
----
-
-## 4. REQUISITOS NO FUNCIONALES
-
-### RNF-01: Rendimiento (Performance)
-**ID:** RNF-01
-**Categoria:** Performance
-**Descripcion:** Las operaciones principales del sistema deben responder dentro de tiempos aceptables para garantizar una experiencia de usuario fluida.
-
-**Metricas:**
-- Tiempo de respuesta de operaciones principales (carga de curso, envio de evaluacion, consulta de progreso): ≤ 2 segundos en P95.
-- Tiempo de carga inicial de la aplicacion web: ≤ 2 segundos en P95.
-- Throughput minimo: ≥ 500 peticiones por segundo en el pico de uso.
-
-**Justificacion:** El enunciado establece explicitamente que las operaciones principales deben responder en menos de 2 segundos. Tiempos superiores generan abandono y frustracion en contextos educativos donde los estudiantes acceden masivamente antes de examenes.
-
----
-
-### RNF-02: Disponibilidad (Availability)
-**ID:** RNF-02
-**Categoria:** Availability
-**Descripcion:** La plataforma debe estar disponible de forma continua, especialmente durante periodos de evaluacion.
-
-**Metricas:**
-- Disponibilidad minima: 99.5% mensual (maximo ~3.6 horas de downtime/mes).
-- RTO: ≤ 1 hora ante fallas de infraestructura.
-- RPO: ≤ 15 minutos de perdida de datos ante falla.
-
-**Justificacion:** El enunciado establece disponibilidad minima del 99.5%. Las instituciones educativas no pueden permitirse caidas durante periodos de evaluacion.
-
----
-
-### RNF-03: Escalabilidad (Scalability)
-**ID:** RNF-03
-**Categoria:** Scalability
-**Descripcion:** El sistema debe soportar el crecimiento en numero de usuarios y cursos sin degradacion del rendimiento.
-
-**Metricas:**
-- Soporte para al menos 5,000 usuarios concurrentes sin degradacion del rendimiento.
-- Capacidad de escalar horizontalmente hasta 10,000 usuarios concurrentes con ajuste de infraestructura.
-- El sistema debe soportar al menos 500 cursos activos simultaneamente.
-- El tiempo de escala automatica ante picos de carga debe ser ≤ 5 minutos.
-
-**Justificacion:** El enunciado establece que el sistema debe soportar multiples cursos y miles de usuarios concurrentes. En contextos educativos, los picos de carga coinciden con periodos de entrega y evaluacion.
-
----
-
-### RNF-04: Seguridad (Security)
-**ID:** RNF-04
-**Categoria:** Security
-**Descripcion:** El sistema debe proteger los datos personales de los usuarios y garantizar que solo usuarios autorizados accedan a recursos segun su rol.
-
-**Metricas:**
-- Autenticacion mediante JWT con expiracion configurable (maximo 8 horas).
-- Todas las comunicaciones deben usar TLS 1.2 o superior.
-- RBAC con verificacion en cada peticion al backend.
-- Los datos sensibles (contraseñas) se almacenan con hash bcrypt (factor de costo ≥ 12).
-- Cumplimiento con Ley 1581 de 2012: consentimiento explicito, politica de privacidad visible.
-
-**Justificacion:** El enunciado requiere autenticacion segura, proteccion de datos personales y RBAC. La naturaleza educativa del sistema implica datos de menores de edad.
-
----
-
-### RNF-05: Mantenibilidad (Maintainability)
-**ID:** RNF-05
-**Categoria:** Maintainability
-**Descripcion:** La arquitectura debe permitir incorporar nuevos modulos o funcionalidades sin afectar el funcionamiento del sistema existente.
-
-**Metricas:**
-- El tiempo para agregar un nuevo modulo independiente al sistema no debe superar 2 semanas de desarrollo.
-- El sistema debe contar con pipelines de CI/CD que permitan despliegues sin tiempo de inactividad.
-- Los logs del sistema deben estructurarse en formato JSON con niveles INFO, WARN, ERROR y trazas de correlacion.
-
-**Justificacion:** El enunciado establece que la arquitectura debe facilitar la incorporacion futura de modulos. Un equipo pequeño requiere alta automatizacion del proceso de desarrollo y despliegue.
-
----
-
-### RNF-06: Interoperabilidad (Interoperability)
-**ID:** RNF-06
-**Categoria:** Interoperability
-**Descripcion:** El sistema debe permitir integraciones futuras con otras plataformas educativas.
-
-**Metricas:**
-- Todas las APIs del sistema deben seguir el estandar REST con respuestas en JSON.
-- Las APIs deben estar documentadas con OpenAPI 3.0.
-- El sistema debe soportar el estandar xAPI (Tin Can API) para registro de actividades de aprendizaje.
-- Las APIs publicas deben tener versionado (ej: /api/v1/) para garantizar retrocompatibilidad.
-
-**Justificacion:** El enunciado establece explicitamente que el sistema debe permitir integraciones futuras con otras plataformas educativas. La adopcion de estandares abiertos reduce el costo de integracion.
-
----
-
-## 5. DRIVERS ARQUITECTURALES IDENTIFICADOS
-
-| ID | Driver | Valor/Metrica | Prioridad |
-|----|--------|---------------|-----------|
-| **DR-01** | Rendimiento | Operaciones principales ≤ 2 seg (P95) | Alta |
-| **DR-02** | Escalabilidad | ≥ 5,000 usuarios concurrentes | Alta |
-| **DR-03** | Disponibilidad | ≥ 99.5% uptime mensual | Alta |
-| **DR-04** | Seguridad | RBAC, TLS, JWT, Ley 1581 | Alta |
-| **DR-05** | Mantenibilidad | Modulos independientes, CI/CD, cobertura ≥ 70% | Media |
-| **DR-06** | Interoperabilidad | APIs REST + OpenAPI 3.0 + xAPI | Media |
-| **DR-07** | Motor Adaptativo | Reglas de adaptacion configurables por docente | Alta |
-
-
----
-
-## 6. CASOS DE USO
-
-Esta seccion documenta los casos de uso principales del sistema en formato extendido. Los casos de uso se derivan directamente de los requisitos funcionales del capitulo 3 y se vinculan a los actores identificados en la seccion 2.3.
-
----
-
-### UC-01: Iniciar Sesion en la Plataforma
-
-**ID:** UC-01
-**Nombre:** Iniciar Sesion en la Plataforma
-**Actor principal:** Estudiante, Docente, Administrador
-**Actores secundarios:** User Service
-**Requisito relacionado:** RF-08
-**Driver relacionado:** DR-04 (Seguridad), DR-01 (Rendimiento)
-**Prioridad:** Alta
-
-**Descripcion breve:** El usuario ingresa sus credenciales institucionales y el sistema valida su identidad, generando un token JWT para las siguientes interacciones.
-
-**Precondiciones:**
-- El usuario tiene una cuenta registrada en el sistema con correo institucional y contraseña.
-- El sistema esta disponible y el User Service responde a peticiones.
-
-**Postcondiciones:**
-- El usuario recibe un token JWT firmado con RS256 valido por 8 horas.
-- La sesion activa se registra en el sistema con TTL=8h.
-- El usuario es redirigido a su dashboard segun su rol (estudiante, docente o administrador).
-
-**Flujo principal de eventos:**
-
-| Paso | Actor | Accion |
-|------|-------|--------|
-| 1 | Usuario | Accede a la URL de la plataforma y selecciona "Iniciar sesion" |
-| 2 | Sistema | Presenta el formulario de inicio de sesion con campos de correo y contraseña |
-| 3 | Usuario | Ingresa su correo institucional y contraseña y confirma |
-| 4 | Sistema (API Gateway) | Recibe la peticion POST /api/v1/auth/login y la enruta al User Service |
-| 5 | Sistema (User Service) | Busca el usuario en la base de datos por correo electronico |
-| 6 | Sistema (User Service) | Verifica la contraseña contra el hash almacenado |
-| 7 | Sistema (User Service) | Genera un token JWT RS256 con claims: userId, email, role, exp (8h) |
-| 8 | Sistema (User Service) | Registra la referencia de sesion activa con TTL=8h |
-| 9 | Sistema | Retorna HTTP 200 con el token JWT al cliente |
-| 10 | Sistema (Web Client) | Almacena el JWT en memoria de la aplicacion y redirige al dashboard correspondiente al rol |
-
-**Flujos alternos:**
-
-*A1: Credenciales incorrectas*
-- En el paso 6, si la verificacion falla, el sistema retorna HTTP 401 con mensaje generico "Credenciales invalidas".
-- El sistema registra el intento fallido en logs con timestamp, IP y correo utilizado.
-- Tras 5 intentos fallidos consecutivos, el sistema aplica un bloqueo temporal de 15 minutos para esa cuenta.
-
-*A2: Cuenta desactivada*
-- En el paso 5, si el usuario existe pero su cuenta esta en estado INACTIVE, el sistema retorna HTTP 403 con mensaje "Cuenta desactivada. Contacte al administrador".
-
-*A3: Sesion ya activa*
-- Si el usuario ya tiene una sesion valida, el sistema permite crear una nueva sesion sin invalidar la anterior (soporte a multiples dispositivos).
-
-**Requisitos no funcionales aplicables:**
-- La latencia de este caso de uso debe ser ≤ 500ms en P95 bajo 500 logins simultaneos (RNF-01).
-- La contraseña viaja cifrada mediante TLS 1.3 y nunca se almacena en texto plano (RNF-04).
-
----
-
-### UC-02: Crear un Curso
-
-**ID:** UC-02
-**Nombre:** Crear un Curso
-**Actor principal:** Docente
-**Actores secundarios:** Course Service, Almacenamiento de archivos
-**Requisito relacionado:** RF-01
-**Driver relacionado:** DR-05 (Mantenibilidad), DR-04 (Seguridad)
-**Prioridad:** Alta
-
-**Descripcion breve:** El docente crea un nuevo curso en la plataforma, definiendo su estructura de modulos y lecciones, y subiendo los materiales educativos iniciales.
-
-**Precondiciones:**
-- El docente tiene una sesion activa con rol INSTRUCTOR.
-- El sistema esta disponible y el Course Service responde a peticiones.
-
-**Postcondiciones:**
-- El curso queda registrado en la base de datos con estado DRAFT (solo visible para el docente).
-- Los materiales educativos subidos se almacenan en el servicio de archivos.
-- El docente puede continuar editando el curso antes de publicarlo.
-
-**Flujo principal de eventos:**
-
-| Paso | Actor | Accion |
-|------|-------|--------|
-| 1 | Docente | Selecciona "Crear nuevo curso" en su panel de docente |
-| 2 | Sistema | Presenta el formulario de creacion de curso |
-| 3 | Docente | Ingresa titulo, descripcion e imagen de portada del curso |
-| 4 | Docente | Agrega al menos un modulo con nombre y descripcion |
-| 5 | Docente | Agrega lecciones dentro del modulo con titulo y materiales (PDF, video, texto) |
-| 6 | Sistema (Web Client) | Solicita URL prefirmada al Course Service y sube los archivos de materiales |
-| 7 | Docente | Confirma la creacion del curso |
-| 8 | Sistema (API Gateway) | Valida el JWT del docente y verifica rol INSTRUCTOR |
-| 9 | Sistema (Course Service) | Crea el registro del curso en la base de datos con estado DRAFT |
-| 10 | Sistema (Course Service) | Crea los registros de modulos y lecciones asociados al curso |
-| 11 | Sistema | Retorna HTTP 201 con el ID del curso creado y redirige al editor del curso |
-
-**Flujos alternos:**
-
-*A1: Archivo de material demasiado grande*
-- En el paso 6, si el archivo supera el limite configurado, el sistema rechaza la subida con mensaje de error.
-
-*A2: Titulo duplicado*
-- En el paso 9, si el docente ya tiene un curso con el mismo titulo, el sistema muestra una advertencia (no bloquea la creacion).
-
-*A3: Sesion expirada durante la creacion*
-- Si el JWT expira durante el proceso, el sistema solicita al usuario volver a autenticarse. Los datos del formulario se conservan localmente en la SPA hasta 30 minutos.
-
-**Requisitos no funcionales aplicables:**
-- La respuesta a la confirmacion de creacion debe ser ≤ 2 segundos en P95 (RNF-01).
-- Solo usuarios con rol INSTRUCTOR o ADMIN pueden acceder a este caso de uso (RNF-04).
-
----
-
-### UC-03: Presentar y Enviar una Evaluacion
-
-**ID:** UC-03
-**Nombre:** Presentar y Enviar una Evaluacion
-**Actor principal:** Estudiante
-**Actores secundarios:** Assessment & Adaptive Service, Sistema de Mensajeria, Analytics Service
-**Requisito relacionado:** RF-02, RF-03, RF-06
-**Driver relacionado:** DR-01 (Rendimiento), DR-02 (Escalabilidad), DR-07 (Motor Adaptativo)
-**Prioridad:** Alta
-
-**Descripcion breve:** El estudiante accede a una evaluacion disponible dentro de un curso, responde las preguntas y envia sus respuestas. El sistema califica automaticamente la evaluacion, aplica las reglas de adaptacion y determina el siguiente paso en el recorrido de aprendizaje.
-
-**Precondiciones:**
-- El estudiante tiene sesion activa con rol STUDENT.
-- El estudiante esta inscrito en el curso al que pertenece la evaluacion.
-- La evaluacion esta en estado AVAILABLE (dentro de la fecha y hora configuradas por el docente).
-- El estudiante no ha agotado el numero maximo de intentos configurado.
-
-**Postcondiciones:**
-- El intento de evaluacion queda registrado en la base de datos con las respuestas, nota obtenida y timestamp.
-- El motor adaptativo determina el siguiente paso y lo registra en el progreso del estudiante.
-- Se publica un evento asincrono para actualizacion del dashboard de analitica.
-- El estudiante recibe retroalimentacion inmediata con su nota, las respuestas correctas y la indicacion del siguiente contenido.
-
-**Flujo principal de eventos:**
-
-| Paso | Actor | Accion |
-|------|-------|--------|
-| 1 | Estudiante | Selecciona la evaluacion disponible dentro de la leccion del curso |
-| 2 | Sistema (Assessment Service) | Verifica el estado de la evaluacion, la inscripcion del estudiante y el numero de intentos |
-| 3 | Sistema | Presenta las preguntas de la evaluacion |
-| 4 | Estudiante | Responde las preguntas dentro del tiempo limite configurado |
-| 5 | Estudiante | Confirma el envio de la evaluacion |
-| 6 | Sistema (Assessment Service) | Califica automaticamente las preguntas de opcion multiple y verdadero/falso |
-| 7 | Sistema (Assessment Service) | Consulta las reglas de adaptacion (desde cache si disponible, o desde la base de datos) |
-| 8 | Sistema (Assessment Service) | Evalua el resultado del estudiante contra el umbral de aprobacion |
-| 9a | Sistema | Si el estudiante supero el umbral: desbloquea la siguiente leccion o contenido de mayor complejidad |
-| 9b | Sistema | Si el estudiante no supero el umbral: selecciona materiales de refuerzo asociados |
-| 10 | Sistema (Assessment Service) | Persiste el intento de evaluacion en la base de datos |
-| 11 | Sistema (Assessment Service) | Publica evento asincrono de evaluacion completada (no bloquea la respuesta) |
-| 12 | Sistema | Retorna HTTP 200 con: nota obtenida, respuestas correctas, retroalimentacion y siguiente contenido |
-| 13 | Sistema (Analytics Service) | Consume el evento de forma asincrona y actualiza el dashboard de progreso |
-
-**Flujos alternos:**
-
-*A1: Tiempo limite agotado*
-- En el paso 4, si el estudiante no envia la evaluacion antes de que expire el temporizador, el sistema envia automaticamente las respuestas registradas hasta ese momento.
-
-*A2: ultimo intento agotado*
-- En el paso 2, si el estudiante ya consumio el numero maximo de intentos, el sistema informa al estudiante que no puede volver a intentar la evaluacion.
-
-*A3: Evaluacion fuera del periodo de disponibilidad*
-- En el paso 2, si la evaluacion esta fuera del periodo configurado, el sistema muestra un mensaje indicando que la evaluacion no esta disponible.
-
-*A4: Perdida de conexion durante la evaluacion*
-- El sistema mantiene las respuestas del estudiante en estado local de la SPA. Al recuperar la conexion, las respuestas guardadas localmente se sincronizan con el servidor.
-
-**Requisitos no funcionales aplicables:**
-- La latencia del envio y calificacion (pasos 5 a 12) debe ser ≤ 2 segundos en P95 (RNF-01).
-- El sistema debe soportar 500 envios simultaneos de evaluaciones sin degradacion (RNF-03).
-
----
-
-### UC-04: Consultar el Progreso Personal
-
-**ID:** UC-04
-**Nombre:** Consultar el Progreso Personal
-**Actor principal:** Estudiante
-**Actores secundarios:** Analytics Service
-**Requisito relacionado:** RF-06
-**Driver relacionado:** DR-01 (Rendimiento)
-**Prioridad:** Alta
-
-**Descripcion breve:** El estudiante accede a su dashboard personal para revisar su avance en los cursos inscritos, el historial de calificaciones y los materiales de refuerzo pendientes.
-
-**Precondiciones:**
-- El estudiante tiene sesion activa con rol STUDENT.
-- El estudiante esta inscrito en al menos un curso.
-
-**Postcondiciones:**
-- El estudiante visualiza su porcentaje de avance por curso, historial de evaluaciones y siguiente contenido sugerido.
-- No se modifica ninguna informacion en la base de datos (operacion de solo lectura).
-
-**Flujo principal de eventos:**
-
-| Paso | Actor | Accion |
-|------|-------|--------|
-| 1 | Estudiante | Accede a la seccion "Mi progreso" desde el menu principal |
-| 2 | Sistema (API Gateway) | Valida el JWT y enruta la peticion al Analytics Service |
-| 3 | Sistema (Analytics Service) | Consulta el progreso del estudiante en la base de datos de lectura |
-| 4 | Sistema (Analytics Service) | Recupera: porcentaje de avance por curso, historial de calificaciones y siguiente contenido sugerido |
-| 5 | Sistema | Retorna HTTP 200 con el resumen de progreso |
-| 6 | Sistema (Web Client) | Presenta el dashboard con graficas de avance y listado de evaluaciones recientes |
-
-**Flujos alternos:**
-
-*A1: Sin actividad registrada*
-- Si el estudiante esta inscrito pero no ha completado ninguna actividad, el sistema muestra el dashboard con avance al 0% y el primer contenido disponible del curso.
-
-**Requisitos no funcionales aplicables:**
-- La latencia de carga del dashboard debe ser ≤ 2 segundos en P95 (RNF-01).
-
----
-
-### UC-05: Participar en el Foro de Discusion
-
-**ID:** UC-05
-**Nombre:** Participar en el Foro de Discusion
-**Actor principal:** Estudiante, Docente
-**Actores secundarios:** Collaboration Service
-**Requisito relacionado:** RF-04
-**Driver relacionado:** DR-03 (Disponibilidad)
-**Prioridad:** Media
-
-**Descripcion breve:** El usuario crea un nuevo hilo de discusion o responde a uno existente en el foro de un curso. El sistema notifica a los participantes relevantes sobre la nueva actividad.
-
-**Precondiciones:**
-- El usuario tiene sesion activa (rol STUDENT, INSTRUCTOR o ADMIN).
-- El usuario esta inscrito en el curso o es el docente del curso.
-- El foro del curso o modulo esta activo (no cerrado por el docente).
-
-**Postcondiciones:**
-- La publicacion queda registrada en la base de datos.
-- Los usuarios suscritos al hilo reciben una notificacion.
-- La publicacion es visible para todos los participantes del curso.
-
-**Flujo principal de eventos:**
-
-| Paso | Actor | Accion |
-|------|-------|--------|
-| 1 | Usuario | Accede al foro del curso o modulo desde la pagina del curso |
-| 2 | Sistema | Presenta la lista de hilos existentes con paginacion |
-| 3a | Usuario (nuevo hilo) | Selecciona "Crear nuevo hilo", ingresa titulo y contenido, y confirma |
-| 3b | Usuario (respuesta) | Selecciona un hilo existente, escribe su respuesta y confirma |
-| 4 | Sistema (API Gateway) | Valida el JWT y verifica la inscripcion al curso |
-| 5 | Sistema (Collaboration Service) | Persiste la publicacion en la base de datos |
-| 6 | Sistema (Collaboration Service) | Publica evento asincrono de nueva publicacion en foro |
-| 7 | Sistema (Collaboration Service) | Retorna HTTP 201 con la publicacion creada |
-| 8 | Sistema (asincrono) | El consumidor de notificaciones procesa el evento y envia notificaciones a los usuarios suscritos |
-
-**Flujos alternos:**
-
-*A1: Foro cerrado por el docente*
-- En el paso 1, si el docente cerro el hilo o el foro, el sistema muestra las publicaciones existentes en modo solo lectura.
-
-*A2: Contenido inapropiado*
-- El docente puede eliminar la publicacion desde su panel de moderacion. La publicacion se marca como DELETED sin eliminarse fisicamente de la base de datos (para auditorias).
-
-**Requisitos no funcionales aplicables:**
-- La publicacion de un mensaje debe responder en ≤ 2 segundos (RNF-01).
-- Las notificaciones se entregan de forma asincrona; no impactan la latencia de la publicacion.
-
----
-
-### UC-06: Configurar Reglas de Adaptacion
-
-**ID:** UC-06
-**Nombre:** Configurar Reglas de Adaptacion de un Curso
-**Actor principal:** Docente
-**Actores secundarios:** Course Service, Assessment & Adaptive Service
-**Requisito relacionado:** RF-03
-**Driver relacionado:** DR-07 (Motor Adaptativo), DR-05 (Mantenibilidad)
-**Prioridad:** Alta
-
-**Descripcion breve:** El docente configura o modifica las reglas de adaptacion de una leccion especifica: umbral de aprobacion, materiales de refuerzo para estudiantes que no superan el umbral y contenido de mayor complejidad para quienes lo superan.
-
-**Precondiciones:**
-- El docente tiene sesion activa con rol INSTRUCTOR.
-- El curso y la leccion a configurar existen y pertenecen al docente.
-
-**Postcondiciones:**
-- La regla de adaptacion queda actualizada en la base de datos.
-- La cache de reglas para esa leccion expira en maximo 60 segundos (por TTL natural), garantizando que la proxima evaluacion use el nuevo umbral.
-- Los proximos estudiantes que completen una evaluacion de esa leccion utilizaran el nuevo umbral.
-
-**Flujo principal de eventos:**
-
-| Paso | Actor | Accion |
-|------|-------|--------|
-| 1 | Docente | Accede al editor del curso y selecciona la leccion a configurar |
-| 2 | Docente | Selecciona la opcion "Configurar reglas de adaptacion" |
-| 3 | Sistema | Presenta el formulario de configuracion con el umbral actual y los materiales de refuerzo/avance actuales |
-| 4 | Docente | Modifica el umbral de aprobacion (valor entre 0 y 100) |
-| 5 | Docente | Selecciona o sube los materiales de refuerzo para estudiantes que no superen el umbral |
-| 6 | Docente | Selecciona o indica el contenido de mayor complejidad a desbloquear para quienes lo superen |
-| 7 | Docente | Confirma los cambios |
-| 8 | Sistema (API Gateway) | Valida el JWT y verifica rol INSTRUCTOR y propiedad del curso |
-| 9 | Sistema (Course Service) | Actualiza el registro de reglas de adaptacion en la base de datos |
-| 10 | Sistema | Retorna HTTP 200 confirmando la actualizacion |
-
-**Flujos alternos:**
-
-*A1: Umbral fuera de rango*
-- En el paso 4, si el docente ingresa un valor fuera del rango 0-100, el sistema muestra validacion en tiempo real e impide el envio del formulario.
-
-*A2: Material de refuerzo no disponible*
-- Si el docente selecciona un material que fue eliminado del curso, el sistema muestra un mensaje de error.
-
-**Requisitos no funcionales aplicables:**
-- La actualizacion de la regla debe persistir en ≤ 1 segundo (RNF-01).
-- Los cambios tienen efecto en la siguiente evaluacion con un retraso maximo de 60 segundos.
-- Solo el docente propietario del curso o un administrador puede modificar las reglas (RNF-04, RBAC).
-
----
-
-### UC-07: Consultar Reporte de Analitica del Curso
-
-**ID:** UC-07
-**Nombre:** Consultar Reporte de Analitica del Curso
-**Actor principal:** Docente
-**Actores secundarios:** Analytics Service
-**Requisito relacionado:** RF-07
-**Driver relacionado:** DR-01 (Rendimiento), DR-05 (Mantenibilidad)
-**Prioridad:** Media
-
-**Descripcion breve:** El docente accede al dashboard de analitica de su curso para identificar patrones de desempeño, revisar los temas con mayor dificultad y exportar reportes.
-
-**Precondiciones:**
-- El docente tiene sesion activa con rol INSTRUCTOR.
-- El curso tiene al menos un estudiante inscrito que haya completado alguna actividad evaluable.
-
-**Postcondiciones:**
-- El docente visualiza el reporte consolidado del curso.
-- Si lo solicita, descarga el reporte en formato CSV o PDF.
-- No se modifica informacion en la base de datos (operacion de solo lectura).
-
-**Flujo principal de eventos:**
-
-| Paso | Actor | Accion |
-|------|-------|--------|
-| 1 | Docente | Accede a "Analitica" desde el panel de su curso |
-| 2 | Sistema (API Gateway) | Valida JWT, verifica rol INSTRUCTOR y propiedad del curso |
-| 3 | Sistema (Analytics Service) | Ejecuta consultas de agregacion en la base de datos de lectura |
-| 4 | Sistema (Analytics Service) | Compila: calificacion promedio, tasa de aprobacion, temas con mayor tasa de error, alertas de riesgo |
-| 5 | Sistema | Retorna HTTP 200 con el reporte en formato JSON |
-| 6 | Sistema (Web Client) | Presenta el dashboard con graficas interactivas de desempeño |
-| 7 | Docente (opcional) | Selecciona "Exportar" en formato CSV o PDF |
-| 8 | Sistema (Analytics Service) | Genera el archivo de exportacion y retorna la URL de descarga |
-
-**Flujos alternos:**
-
-*A1: Sin datos suficientes*
-- Si no hay evaluaciones completadas aun, el sistema muestra el dashboard vacio.
-
-*A2: Alerta automatica activa*
-- Si el sistema detecto que mas del 30% de los estudiantes reprobaron una evaluacion, el docente ve una alerta destacada al inicio del dashboard.
-
-**Requisitos no funcionales aplicables:**
-- La carga del dashboard debe responder en ≤ 2 segundos en P95 (RNF-01).
-- Los datos del reporte consolidado pueden tener hasta 24 horas de retraso respecto a la actividad mas reciente (RF-07).
-
----
-
-### UC-08: Gestionar Usuarios del Sistema
-
-**ID:** UC-08
-**Nombre:** Gestionar Usuarios del Sistema
-**Actor principal:** Administrador
-**Actores secundarios:** User Service
-**Requisito relacionado:** RF-08
-**Driver relacionado:** DR-04 (Seguridad)
-**Prioridad:** Alta
-
-**Descripcion breve:** El administrador crea, edita, activa o desactiva cuentas de usuario en el sistema, asignando el rol correspondiente.
-
-**Precondiciones:**
-- El administrador tiene sesion activa con rol ADMIN.
-- El sistema esta disponible y el User Service responde a peticiones.
-
-**Postcondiciones:**
-- Los cambios en las cuentas de usuario quedan registrados en la base de datos.
-- Si una cuenta se desactiva, su token JWT activo se invalida en la proxima verificacion de sesion.
-
-**Flujo principal de eventos:**
-
-| Paso | Actor | Accion |
-|------|-------|--------|
-| 1 | Administrador | Accede al panel de administracion de usuarios |
-| 2 | Sistema | Presenta la lista paginada de usuarios con filtros por rol y estado |
-| 3a | Administrador (creacion) | Selecciona "Nuevo usuario", ingresa nombre, correo institucional y rol, y confirma |
-| 3b | Administrador (edicion) | Selecciona un usuario existente, modifica sus datos y confirma |
-| 3c | Administrador (desactivacion) | Selecciona un usuario activo y selecciona "Desactivar cuenta" |
-| 4 | Sistema (API Gateway) | Valida el JWT del administrador y verifica rol ADMIN |
-| 5 | Sistema (User Service) | Ejecuta la operacion correspondiente en la base de datos |
-| 6 | Sistema (User Service) | En caso de desactivacion, marca la sesion del usuario como REVOKED |
-| 7 | Sistema | Retorna HTTP 200 o 201 confirmando la operacion |
-
-**Flujos alternos:**
-
-*A1: Correo ya registrado*
-- En el paso 3a, si el correo ingresado ya existe en el sistema, el sistema muestra el error "El correo ya esta registrado".
-
-*A2: Intento de desactivar la propia cuenta*
-- El sistema impide que el administrador desactive su propia cuenta activa.
-
-**Requisitos no funcionales aplicables:**
-- La operacion de creacion o modificacion de usuario debe responder en ≤ 2 segundos en P95 (RNF-01).
-- Solo usuarios con rol ADMIN pueden ejecutar este caso de uso (RNF-04, RBAC).
-
----
-
-### UC-09: Unirse o Crear un Grupo de Estudio
-
-**ID:** UC-09
-**Nombre:** Unirse o Crear un Grupo de Estudio
-**Actor principal:** Estudiante
-**Actores secundarios:** Collaboration Service, Analytics Service
-**Requisito relacionado:** RF-05
-**Driver relacionado:** DR-03 (Disponibilidad)
-**Prioridad:** Media
-
-**Descripcion breve:** El estudiante crea un grupo de estudio dentro de un curso o se une a uno existente. El sistema evalua automaticamente si el estudiante puede asumir el rol de tutor basandose en su desempeño.
-
-**Precondiciones:**
-- El estudiante tiene sesion activa con rol STUDENT.
-- El estudiante esta inscrito en el curso donde quiere crear o unirse a un grupo.
-
-**Postcondiciones:**
-- El grupo queda registrado en la base de datos con el estudiante como miembro o creador.
-- Si el estudiante tiene calificacion promedio > 85%, el sistema le ofrece el rol de tutor del grupo.
-- El estudiante tiene acceso al espacio de chat privado del grupo.
-
-**Flujo principal de eventos:**
-
-| Paso | Actor | Accion |
-|------|-------|--------|
-| 1 | Estudiante | Accede a la seccion "Grupos de estudio" del curso |
-| 2 | Sistema | Muestra grupos existentes con plazas disponibles y opcion "Crear grupo" |
-| 3a | Estudiante (unirse) | Selecciona un grupo con plazas disponibles y confirma su incorporacion |
-| 3b | Estudiante (crear) | Ingresa nombre, descripcion y maximo de integrantes del nuevo grupo |
-| 4 | Sistema (API Gateway) | Valida el JWT y verifica inscripcion en el curso |
-| 5 | Sistema (Collaboration Service) | Registra la operacion en la base de datos y crea el espacio de chat |
-| 6 | Sistema (Analytics Service) | Evalua si el estudiante tiene calificacion promedio > 85% en el curso |
-| 7 | Sistema | Si es candidato a tutor, envia notificacion al estudiante ofreciendo el rol |
-| 8 | Sistema | Retorna HTTP 201 con el ID del grupo y acceso al chat |
-
-**Flujos alternos:**
-
-*A1: Grupo lleno*
-- En el paso 3a, si el grupo ya alcanzo el maximo de integrantes, el sistema muestra el mensaje "Grupo completo" y sugiere otros grupos disponibles.
-
-*A2: Asignacion manual de tutor por docente*
-- El docente puede asignar un tutor especifico desde su panel, independientemente del umbral automatico del 85%.
-
-**Requisitos no funcionales aplicables:**
-- La creacion o adhesion al grupo debe responder en ≤ 2 segundos en P95 (RNF-01).
-- Solo usuarios inscritos en el curso pueden unirse a sus grupos (RNF-04, RBAC).
-
----
-
-### Resumen de Casos de Uso
-
-| ID | Nombre | Actor Principal | Requisito | Prioridad |
-|----|--------|-----------------|-----------|-----------|
-| UC-01 | Iniciar Sesion en la Plataforma | Estudiante, Docente, Administrador | RF-08 | Alta |
-| UC-02 | Crear un Curso | Docente | RF-01 | Alta |
-| UC-03 | Presentar y Enviar una Evaluacion | Estudiante | RF-02, RF-03, RF-06 | Alta |
-| UC-04 | Consultar el Progreso Personal | Estudiante | RF-06 | Alta |
-| UC-05 | Participar en el Foro de Discusion | Estudiante, Docente | RF-04 | Media |
-| UC-06 | Configurar Reglas de Adaptacion | Docente | RF-03 | Alta |
-| UC-07 | Consultar Reporte de Analitica del Curso | Docente | RF-07 | Media |
-| UC-08 | Gestionar Usuarios del Sistema | Administrador | RF-08 | Alta |
-| UC-09 | Unirse o Crear un Grupo de Estudio | Estudiante | RF-05 | Media |
-
----
-
+**Fin del Documento SRS v2.0**
